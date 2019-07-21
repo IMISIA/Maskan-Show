@@ -73,7 +73,7 @@ export default {
                 text: `${msg}` ,
                 color: color ,
                 icon: icon ,
-                position: 'bottom-left',
+                position: 'top-left',
                 time: 3000
             })
         } ,

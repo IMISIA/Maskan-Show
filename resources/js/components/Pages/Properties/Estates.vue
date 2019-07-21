@@ -5,16 +5,28 @@
 
             <div class="sec-title mb-xs-5">
 
-                <div class="d-flex align-items-center" v-if="!Res">
+                <div class="d-flex align-items-center grid-list-btn" v-if="!Res">
                     <el-radio-group v-model="grid_list">
-                        <el-radio-button :label="true"> <i class="fa fa-th-large"></i> </el-radio-button>
-                        <el-radio-button :label="false"> <i class="fa fa-list"></i> </el-radio-button>
+                        <el-radio-button :label="true">
+                            <v-img
+                                src="/img/gird.png"
+                                height="20px"
+                                width="20px">
+                            </v-img>
+                        </el-radio-button>
+                        <el-radio-button :label="false">
+                            <v-img
+                                src="/img/list.png"
+                                height="20px"
+                                width="20px">
+                            </v-img>
+                        </el-radio-button>
                     </el-radio-group>
                 </div>
 
                 <div>
                     <span class="estates-title"> ... خونه جدیدت رو پیدا کن </span>
-                    <h2> خرید و فروش آپارتمان </h2>
+                    <h2 :class="{ 'fs-20' : Res }"> {{ title || 'خرید و فروش آپارتمان' }} </h2>
                 </div>
 
             </div>
@@ -64,6 +76,7 @@
 
     export default {
 
+        props: ['title'] ,
         mixins: [mixin] ,
 
         data() {
@@ -89,6 +102,20 @@
 </script>
 
 <style>
+
+    .grid-list-btn .v-image__image {
+        border-radius: 0px !important
+    }
+
+    .grid-list-btn .el-radio-button__inner {
+        padding: 10px 15px !important;
+    }
+    
+    .grid-list-btn .el-radio-button__orig-radio:checked+.el-radio-button__inner {
+        background-color: #29b6f6 !important;
+        border-color: #29b6f6 !important;
+        box-shadow: 1px 3px 8px -4px #409EFF, 0px 2px 6px -6px #000 !important;
+    }
 
     .filter-btn {
         text-align: center;

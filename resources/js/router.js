@@ -19,11 +19,7 @@ let routes = [
         component : require('./components/Pages/Estate.vue').default
     } ,
     {
-        path : '/team' ,
-        component : require('./components/Pages/team.vue').default
-    } ,
-    {
-        path : '/blog' ,
+        path : '/blog/:slug?' ,
         component : require('./components/Pages/blog.vue').default
     } ,
     {
@@ -33,6 +29,10 @@ let routes = [
     {
         path : '/contact' ,
         component : require('./components/Pages/contact.vue').default
+    } ,
+    {
+        path : '*' ,
+        component : require('./components/Pages/404.vue').default
     } ,
 
 ]

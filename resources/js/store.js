@@ -10,10 +10,16 @@ const store = new Vuex.Store({
 
         dialog_filters : false ,
 
+        register_modal : false ,
+        login_modal : false ,
+
         Auth : !!window.localStorage.getItem('JWT') ,
         url : 'http://192.168.1.219' ,
         req_url : !!window.localStorage.getItem('JWT') ? 'http://192.168.1.219/graphql/auth' : 'http://192.168.1.219/graphql' ,
         
+        // User Information
+        me : {} ,
+
         // ========== Filters States ========== //
         city_areas : [] ,
         area_streets : [] ,
@@ -140,10 +146,9 @@ const store = new Vuex.Store({
                 }
             })
             .then( ({data}) => {
-
                 console.log(data);
-
                 if( !!data.errors ) {
+                    console.log(data.errors);
                     data.errors.forEach( Err => console.error(Err.message) )
                 } else {
                     obj.props.forEach( ( el , index ) => {
@@ -166,8 +171,12 @@ const store = new Vuex.Store({
                 }, 500);
             })
             .catch( Err => {
-                window.localStorage.removeItem('JWT')
-                console.log( Err )
+                if( Err.response && Err.response.status === 401 ) {
+                    window.localStorage.removeItem('JWT');
+                    location.reload();
+                } else {
+                    console.log(Err);
+                }
             })
 
         } ,

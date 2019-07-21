@@ -369,7 +369,41 @@
 
         <date-picker v-model="date" element="date-picker"></date-picker>
 
-        <Estates :class="{ 'mb-5' : !(total > 1) }"></Estates>
+        <section class="profile-estate mb-5 pt-xs-5">
+            <div class="container">
+                <div class="row rtl">
+
+                    <div class="col-md-2 text-center">
+                        <v-avatar
+                            color="teal"
+                            :size="130">
+                            <img v-if="true" src="/img/user.png" alt="avatar">
+                            <span v-else> اصنافی </span>
+                        </v-avatar>
+                    </div>
+
+                    <div class="col-md-10 d-flex flex-column justify-content-around mt-xs-4"
+                        :class="[ Res ? 'text-center' : 'text-right' ]">
+
+                        <div class="username"> سید ایمان اصنافی </div>
+
+                        <p class="mt-3 mb-0" :class="[ Res ? 'text-center' : 'text-right' ]">
+                            <i class="fa fa-map-marker ml-2 fs-20 bold web-color"></i>
+                            {{ 'خیابان سناباد ، سناباد 44 ، ساختمان 52' }}
+                        </p>
+
+                        <p class="mt-3 mb-0" :class="[ Res ? 'text-center' : 'text-right' ]">
+                            <i class="fa fa-phone ml-2 fs-20 bold web-color"></i>
+                            (567) 666 121 2233
+                        </p>
+
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <Estates :class="{ 'mb-5' : !(total > 1) }" title="ملک های سید ایمان اصنافی"></Estates>
 
         <div class="properties_area mt-4" v-if="total > 1">
             <vs-pagination :color="web_color" :total="total" v-model="page"></vs-pagination>
@@ -1250,6 +1284,7 @@
         padding-left: 32px;
         padding-right: 10px;
         text-align: right;
+        font-size: 12px !important;
     }
 
     .vs-input--placeholder {
@@ -1268,10 +1303,28 @@
 
     .vs-input--input:focus+.vs-input--placeholder {
         top: 10px;
-        background: #fff;
         width: fit-content;
         right: 0px;
         padding: 0px 7px !important;
+    }
+
+    .vs-input--input+.vs-input--placeholder::before {
+        position: absolute;
+        right: 0;
+        top: 10px;
+        content: "";
+        height: 3px;
+        width: 0px;
+        background: transparent;
+        opacity: 0;
+        z-index: -1;
+        transition: all .4s ease-in-out .04s;
+    }
+
+    .vs-input--input:focus+.vs-input--placeholder::before {
+        width: 60px;
+        background: #fff;
+        opacity: 1;
     }
 
     .vs-input--input.hasValue+.vs-placeholder-label {
@@ -1330,6 +1383,12 @@
 </style>
 
 <style scoped>
+
+    .profile-estate .username {
+        font-weight: bold !important;
+        font-size: 22px;
+        color: #484848;
+    }
 
     .as-px-4 {
         padding-right: 4rem !important;

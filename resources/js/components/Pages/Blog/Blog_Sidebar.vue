@@ -26,11 +26,11 @@
             <v-avatar
             size="130"
             color="grey lighten-4">
-                <img :style="{ border : ` 4px solid ${web_color}` }" :src=" writer.avatar ? url + writer.avatar.small : '/template/karma/img/user.png' " alt="avatar">
+                <img :style="{ border : ` 4px solid ${web_color}` }" :src=" writer.avatar ? url + writer.avatar.small : '/img/user.png' " alt="avatar">
             </v-avatar>
 
             <h4 class="bold"> {{ writer.full_name }} </h4>
-            <p> نویسنده </p>
+            <p class="text-center"> نویسنده </p>
             <div class="social_icon" v-if="false">
                 <a href="#">
                     <img class="mx-1" src="/template/karma/img/blog/twitter.svg" height="25px" width="25px" alt="facebook">

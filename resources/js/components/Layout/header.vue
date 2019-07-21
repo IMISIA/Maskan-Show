@@ -12,7 +12,8 @@
                         </router-link>
 
                         <div v-if="!Res">
-                            <v-btn class="px-4" :color="web_color" dark round> ورود / ثبت نام </v-btn>
+                            <v-btn class="px-4" :color="web_color" dark round
+                                @click="Set_state({ prop : 'login_modal' , val : true })"> ورود / ثبت نام </v-btn>
                         </div>
 
                         <div id="nav-icon3" :class="{ 'open' : drawer }" v-show="Res" @click="drawer = !drawer">
@@ -68,7 +69,7 @@
                 </v-list>
 
                 <div class="login-drawer">
-                    <v-btn large :color="web_color" dark round> ورود / ثبت نام </v-btn>
+                    <v-btn large :color="web_color" dark round @click="open_modal"> ورود / ثبت نام </v-btn>
                 </div>
 
             </v-navigation-drawer>
@@ -79,6 +80,7 @@
 
 <script>
 
+    import { mapMutations } from 'vuex';
     import mixin from '../../mixin';
 
     export default {
@@ -117,6 +119,25 @@
                     { title : 'تماس باما' , link : '/contact' , icon : 'lnr-phone-handset' } ,
                 ]
             }
+        } ,
+
+        methods : {
+            
+            ...mapMutations([
+                'Set_state'
+            ]) ,
+
+            open_modal() {
+
+                this.drawer = false
+
+                setTimeout(() => {
+                    this.Set_state({ prop : 'login_modal' , val : true })
+                }, 400);
+
+
+            }
+
         }
 
     }

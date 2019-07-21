@@ -54,13 +54,15 @@
 
                 <div class="room-info-warp rtl text-right">
                     <div class="row room-info">
-                        <template v-for="spec in estate.spec.filters.slice(0,4)">
-                            <div class="col-6" v-if=" !!spec.data.values && !!spec.data.values.length " :key="spec.id">
-                                <p class="hvr-icon-back">
-                                    <i class="fa fa-building-o hvr-icon"></i>
-                                    {{ join_props( spec.data.values , spec.prefix , spec.postfix ) | truncate(15) }}
-                                </p>
-                            </div>	
+                        <template v-if="!!estate.spec">
+                            <template v-for="spec in estate.spec.filters.slice(0,4)">
+                                <div class="col-6" v-if=" !!spec.data && !!spec.data.values && !!spec.data.values.length " :key="spec.id">
+                                    <p class="hvr-icon-back">
+                                        <i class="fa fa-building-o hvr-icon"></i>
+                                        {{ join_props( spec.data.values , spec.prefix , spec.postfix ) | truncate(15) }}
+                                    </p>
+                                </div>	
+                            </template>
                         </template>
                     </div>
                 </div>
@@ -68,16 +70,27 @@
                 <div class="property-price clearfix">
                     <div class="read-more rtl">
                         <div class="theme-btn">
-                            <span v-if="assignment.has_sales_price">
-                                {{ (estate.sales_price).toLocaleString('fa-IR') }} <span class="fs-12 pr-1"> تومان </span>
-                            </span>
-                            <span v-else-if="assignment.has_mortgage_price && assignment.has_rental_price">
-                                {{ estate.mortgage_price | filter_price }} <span class="fs-12 ml-3"> رهن </span>
-                                {{ estate.rental_price | filter_price }} <span class="fs-12"> اجاره </span>
-                            </span>
-                            <span v-else>
-                                {{ (estate.mortgage_price || estate.rental_price).toLocaleString('fa-IR') }} <span class="fs-12 pr-1"> تومان </span>
-                            </span>
+
+                            <div v-if="assignment.has_sales_price">
+                                {{ estate.sales_price | price }}
+                                <span class="fs-12 pr-1 normal"> {{ label_price(estate.sales_price) }} </span>
+                            </div>
+                            <div class="d-flex" v-else-if="assignment.has_mortgage_price && assignment.has_rental_price">
+                                <div>
+                                    {{ estate.mortgage_price | multi_price }}
+                                    <span class="fs-12 normal"> {{ label_multi_price(estate.mortgage_price) }} رهن </span>
+                                </div>
+                                <span class="mx-2"></span>
+                                <div>
+                                    {{ estate.rental_price | multi_price }}
+                                    <span class="fs-12 normal"> {{ label_multi_price(estate.rental_price) }} اجاره </span>
+                                </div>
+                            </div>
+                            <div v-else>
+                                {{ (estate.mortgage_price || estate.rental_price) | price }}
+                                <span class="fs-12 pr-1 normal"> {{ label_price(estate.mortgage_price || estate.rental_price) }} </span>
+                            </div>
+
                         </div>
                     </div>
                     <div class="price rtl"> {{ (estate.area).toLocaleString('fa-IR') }} متری </div>
@@ -109,13 +122,28 @@
         } ,
 
         filters : {
-            filter_price(val) {
-                if( val < 1000000 ) {
-                    return (Math.ceil(val/1000)).toLocaleString('fa-IR') + ' ت';
-                } else {
-                    return (Math.ceil(val/1000000)).toLocaleString('fa-IR') + ' م';
+
+            price(val) {
+                if(val < 1000000) {
+                    return (val/1000).toLocaleString('fa-IR')
+                } else if(val < 1000000000) {
+                    return (val/1000000).toLocaleString('fa-IR')
+                } else if(val > 1000000000) {
+                    return (val/1000000000).toLocaleString('fa-IR')
+                }
+            } ,
+
+            multi_price(val) {
+                if(val < 1000000) {
+                    return (val/1000).toLocaleString('fa-IR')
+                } else if(val < 1000000000) {
+                    console.log((val/1000000).toFixed(1));
+                    return parseFloat((val/1000000).toFixed(1)).toLocaleString('fa-IR')
+                } else if(val > 1000000000) {
+                    return parseFloat((val/1000000000).toFixed(2)).toLocaleString('fa-IR')
                 }
             }
+
         } ,
 
         computed : {
@@ -154,6 +182,7 @@
         } ,
 
         methods : {
+
             join_props( values , prefix , postfix ) {
                 let arr = [];
                 
@@ -166,6 +195,27 @@
 
                 return arr.join(' ، ');
             } ,
+
+            label_price(val) {
+                if(val < 1000000) {
+                    return `هزار تومان`
+                } else if(val < 1000000000) {
+                    return `میلیون تومان`
+                } else if(val > 1000000000) {
+                    return `میلیارد تومان`
+                }
+            } ,
+
+            label_multi_price(val) {
+                if(val < 1000000) {
+                    return ``
+                } else if(val < 1000000000) {
+                    return `م`
+                } else if(val > 1000000000) {
+                    return `م`
+                }
+            } ,
+
         }
 
     }

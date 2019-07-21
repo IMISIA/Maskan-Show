@@ -1,10 +1,8 @@
 <template>
     <div>
 
-        <banner title="وبلاگ تکی"></banner>
-
         <!--================Blog Area =================-->
-        <section class="blog_area single-post-area section_gap">
+        <section class="blog_area single-post-area section_gap pt-5">
             <div class="container">
                 <div class="row">
 
@@ -142,7 +140,7 @@
                                                                 <span class="text-center fs-12 mr-2"> {{ Qa.created_at | ago }} </span>                                            
                                                             </vs-tooltip>
 
-                                                            <v-btn class="open-answer" outline round :color="web_color_grd" small>
+                                                            <v-btn class="open-answer" outline round :color="web_color_light" small>
                                                                 <span class="fs-12" @click="open_dialpg_cm(Qa.id)"> پاسخ دهید </span>
                                                             </v-btn>       
                                                             
@@ -304,12 +302,6 @@
 
         mixins : [mixin,moment] ,
 
-        metaInfo() {
-            return {
-                title : `${this.single_article.title}`
-            }
-        } ,
-        
         created() {
             this.Req();
             this.reply_cm();
@@ -532,7 +524,14 @@
                             this.$store.state.loading = false
                         }, 500);
                     })
-                    .catch( Err => console.log( Err ) ) 
+                    .catch( Err => {
+                        if( Err.response && Err.response.status === 401 ) {
+                            window.localStorage.removeItem('JWT');
+                            location.reload();
+                        } else {
+                            console.log(Err);
+                        }
+                    }) 
 
                 }
             } ,

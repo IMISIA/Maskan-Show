@@ -98,7 +98,7 @@
 
                             </div>
 
-                            <template v-if="is_exist(Single_estate.spec.headers)">
+                            <template v-if="is_exist(Single_estate.spec) && is_exist(Single_estate.spec.headers) ">
                                 <div v-for="spec in Single_estate.spec.headers" :key="spec.id">
                                     <template v-if="is_exist(spec.rows)">
                                         <h3 class="sl-sp-title"> {{ spec.title }} </h3>
@@ -204,25 +204,22 @@
 
                             <div class="media-estate">
 
-                                <h3 class="sl-sp-title"> عکس ها </h3>
-
-                                <div class="single-list-slider owl-carousel" id="sl-slider">
-                                    <div class="sl-item set-bg" data-setbg="/img/single-list-slider/1.jpg"></div>
-                                    <div class="sl-item set-bg" data-setbg="/img/single-list-slider/2.jpg"></div>
-                                    <div class="sl-item set-bg" data-setbg="/img/single-list-slider/3.jpg"></div>
-                                    <div class="sl-item set-bg" data-setbg="/img/single-list-slider/4.jpg"></div>
-                                    <div class="sl-item set-bg" data-setbg="/img/single-list-slider/5.jpg"></div>
-                                </div>
+                                <template v-if="is_exist(images)">
+                                    <h3 class="sl-sp-title"> عکس ها </h3>
+                                    <div class="single-list-slider owl-carousel" id="sl-slider">
+                                        <div class="sl-item set-bg" v-for="img in images" :key="img.id"
+                                            :data-setbg="img.medium">
+                                        </div>
+                                    </div>
+                                </template>
 
                                 <div class="owl-carousel sl-thumb-slider mb-5" id="sl-slider-thumb">
-                                    <div class="sl-thumb set-bg" data-setbg="img/single-list-slider/1.jpg"></div>
-                                    <div class="sl-thumb set-bg" data-setbg="img/single-list-slider/2.jpg"></div>
-                                    <div class="sl-thumb set-bg" data-setbg="img/single-list-slider/3.jpg"></div>
-                                    <div class="sl-thumb set-bg" data-setbg="img/single-list-slider/4.jpg"></div>
-                                    <div class="sl-thumb set-bg" data-setbg="img/single-list-slider/5.jpg"></div>
+                                    <div class="sl-thumb set-bg" v-for="img in images" :key="img.id"
+                                        :data-setbg="img.medium">
+                                    </div>
                                 </div>
 
-                                <h3 class="sl-sp-title"> فیلم ملک </h3>
+                                <h3 class="sl-sp-title" v-if="false"> فیلم ملک </h3>
                                 <div class="perview-video" v-if="false">
                                     <div id="81412734058">
                                         <script type="text/JavaScript"
@@ -233,23 +230,26 @@
 
                             </div>
 
-                            <h3 class="sl-sp-title"> محل ملک بر روی نقشه </h3>
-                            <l-map ref="map" class="map" :zoom="zoom" :center="estate_location">
+                            <template v-if="is_exist(estate_location)">
+                                <h3 class="sl-sp-title"> محل ملک بر روی نقشه </h3>
+                                <l-map ref="map" class="map" :zoom="zoom" :center="estate_location">
 
-                                <l-tile-layer url="http://{s}.tile.osm.org/{z}/{x}/{y}.png"></l-tile-layer>
+                                    <l-tile-layer url="http://{s}.tile.osm.org/{z}/{x}/{y}.png"></l-tile-layer>
 
-                                <!-- <l-circle-marker :lat-lng="estate_location" :radius="6" color="#304FFE">
-                                    <l-tooltip>موقعیت مکانی شما</l-tooltip>
-                                </l-circle-marker> -->
+                                    <!-- <l-circle-marker :lat-lng="estate_location" :radius="6" color="#304FFE">
+                                        <l-tooltip>موقعیت مکانی شما</l-tooltip>
+                                    </l-circle-marker> -->
 
-                                <l-marker :draggable="false" :lat-lng="estate_location">
-                                    <l-icon :icon-size="[40,50]" :icon-anchor="[20,50]"
-                                        icon-url="/img/location_marker.svg">
-                                    </l-icon>
-                                    <l-tooltip> موقعیت مکانی ملک </l-tooltip>
-                                </l-marker>
+                                    <l-marker :draggable="false" :lat-lng="estate_location">
+                                        <l-icon :icon-size="[40,50]" :icon-anchor="[20,50]"
+                                            icon-url="/img/location_marker.svg">
+                                        </l-icon>
+                                        <l-tooltip> موقعیت مکانی ملک </l-tooltip>
+                                    </l-marker>
 
-                            </l-map>
+                                </l-map>
+                            </template>
+
 
                         </div>
                     </div>
@@ -259,56 +259,93 @@
 
                         <div class="author-card as-shadow border-radius rtl text-center p-4">
 
-                            <p class="text-center border-bottom pb-2 mx-4"> اطلاعات مالک </p>
-
-                            <div class="row">
-                                <div class="col-5">
-                                    <p class="text-muted fs-12 text-left mb-1"> نام مالک : </p>   
-                                </div>
-                                <div class="col-7">
-                                    <p class="mb-3 text-right"> سید ایمان اصنافی </p>
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-5">
-                                    <p class="text-muted fs-12 text-left mb-1"> شماره تماس : </p>   
-                                </div>
-                                <div class="col-7">
-                                    <p class="mb-3 text-right"> 09154188571 </p>
-                                </div>
-                            </div>
-
-                            <div>
-
-                                <v-btn
-                                    v-if="Auth || true"
-                                    :color="web_color"
-                                    class="white--text"
-                                    round
-                                    :disabled="assignment_estate_loading"
-                                    :loading="assignment_estate_loading"
-                                    @click="assignment_estate">
-                                    <v-icon class="ml-2" dark>flag</v-icon>
-                                    <span class="fs-13"> اعلام واگذاری </span>
-                                </v-btn>
-
-                                <el-popover
-                                    placement="top"
-                                    width="190"
-                                    v-model="confirm_print">
-                                    <p class="text-center fs-12"> با اطلاعات مالک پرینت شود ؟ </p>
-                                    <div>
-                                        <el-button type="primary" size="mini" @click="print(true)"> بله </el-button>
-                                        <el-button size="mini" type="text" @click="print(false)"> نه </el-button>
-                                    </div>
-                                    <v-btn slot="reference" color="blue darken-2" fab dark small>
-                                        <v-icon>print</v-icon>
+                            <div class="text-center mx-4"
+                                :class="[ show_owner_info && has_owner_info ? 'border-bottom pb-2 mb-3' : 'mb-0' ]">
+                                
+                                <template v-if="show_owner_info && has_owner_info">
+                                        
+                                    <v-btn
+                                        :color="web_color"
+                                        class="white--text"
+                                        round
+                                        @click="show_info">
+                                        <v-icon class="ml-2" dark>visibility</v-icon>
+                                        <span class="fs-13"> نمایش اطلاعات مالک </span>
                                     </v-btn>
-                                </el-popover>
 
+                                    <el-popover
+                                        placement="top"
+                                        width="190"
+                                        v-model="confirm_print">
+                                        <p class="text-center fs-12"> با اطلاعات مالک پرینت شود ؟ </p>
+                                        <div>
+                                            <el-button type="primary" size="mini" @click="print(true)"> بله </el-button>
+                                            <el-button size="mini" type="text" @click="print(false)"> نه </el-button>
+                                        </div>
+                                        <v-btn slot="reference" color="blue darken-2" fab dark small>
+                                            <v-icon>print</v-icon>
+                                        </v-btn>
+                                    </el-popover>
+
+                                </template>
+
+                                <template v-else>
+                                    اطلاعات املاک
+                                </template>
 
                             </div>
+
+                            <template v-if="show_owner_info && has_owner_info">
+
+                                <div class="row">
+                                    <div class="col-5">
+                                        <p class="text-muted fs-12 text-left mb-1"> نام مالک : </p>   
+                                    </div>
+                                    <div class="col-7">
+                                        <p class="mb-3 text-right"> {{ Single_estate.landlord_fullname }} </p>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-5">
+                                        <p class="text-muted fs-12 text-left mb-1"> شماره تماس : </p>   
+                                    </div>
+                                    <div class="col-7">
+                                        <p class="mb-3 text-right"> {{ Single_estate.landlord_phone_number }} </p>
+                                    </div>
+                                </div>
+
+                                <div>
+
+                                    <v-btn
+                                        v-if="Auth || true"
+                                        :color="web_color"
+                                        class="text-white"
+                                        round
+                                        :disabled="assignment_estate_loading"
+                                        :loading="assignment_estate_loading"
+                                        @click="assignment_estate">
+                                        <v-icon class="ml-2" dark>flag</v-icon>
+                                        <span class="fs-13"> اعلام واگذاری </span>
+                                    </v-btn>
+
+                                    <el-popover
+                                        placement="top"
+                                        width="190"
+                                        v-model="confirm_print">
+                                        <p class="text-center fs-12"> با اطلاعات مالک پرینت شود ؟ </p>
+                                        <div>
+                                            <el-button type="primary" size="mini" @click="print(true)"> بله </el-button>
+                                            <el-button size="mini" type="text" @click="print(false)"> نه </el-button>
+                                        </div>
+                                        <v-btn slot="reference" color="blue darken-2" fab dark small>
+                                            <v-icon>print</v-icon>
+                                        </v-btn>
+                                    </el-popover>
+
+                                </div>
+                                
+                            </template>
 
                         </div>
 
@@ -347,10 +384,10 @@
 
                 <div class="text-center">
                     <h2>
-                        !!! متاسفانه ملک مورد نظر یافت نشد
+                        !!!متاسفانه ملک مورد نظر یافت نشد
                     </h2>
                     <h4 class="mt-3">
-                        برای دیدن دیر املاک
+                        برای دیدن دیگر املاک
                         <router-link to="/properties"> اینجا </router-link>
                         کلیک کنید
                     </h4>
@@ -396,176 +433,15 @@
         } ,
 
         created() {
-            this.Set_state({ prop : 'Single_estate' , val : {} })
-            this.Req_data({
-                query: `
-                    {
-                        estate( id : "${this.$route.params.id}" ) {
-                            id
-                            code
-                            title
-                            description
-                            photos {
-                                id
-                                file_name
-                                medium
-                            }
-                            address
-                            area
-                            rental_price
-                            mortgage_price
-                            sales_price
-                            spec {
-                                id
-                                title
-                                headers {
-                                    id
-                                    title
-                                    description
-                                    rows {
-                                        id
-                                        title
-                                        description
-                                        icon
-                                        is_multiple
-                                        prefix
-                                        postfix
-                                        data {
-                                            id
-                                            data
-                                            values {
-                                                id
-                                                value
-                                            }
-                                        }
-                                        help
-                                    }
-                                }
-                            }
-                            features {
-                                id
-                                icon
-                                title
-                            }
-                            advantages
-                            disadvantages
-                            coordinates {
-                                lat
-                                lng
-                            }
-                            assignment {
-                                id
-                                title
-                                color
-                            }
-                            estate_type {
-                                id
-                                title
-                            }
-                            street {
-                                id
-                                name
-                                area {
-                                   id
-                                }
-                            }
-                        }
-                    }`,
-                props: ['estate'],
-                states: ['Single_estate']
-            })
-        } ,
-
-        mounted() {
-            $(document).ready(function () {
-
-                // Background set
-                $('.set-bg').each(function () {
-                    var bg = $(this).data('setbg');
-                    $(this).css('background-image', 'url(' + bg + ')');
-                });
-
-                // Review Slider
-                var sync1 = $("#sl-slider");
-                var sync2 = $("#sl-slider-thumb");
-                var slidesPerPage = 4; //globaly define number of elements per page
-                var syncedSecondary = true;
-
-                sync1.owlCarousel({
-                    items: 1,
-                    rtl:true,
-                    slideSpeed: 2000,
-                    nav: false,
-                    autoplay: true,
-                    dots: true,
-                    loop: true,
-                    responsiveRefreshRate: 200,
-                }).on('changed.owl.carousel', syncPosition);
-
-                sync2.on('initialized.owl.carousel', function () {
-                    sync2.find(".owl-item").eq(0).addClass("current");
-                }).owlCarousel({
-                    items: slidesPerPage,
-                    dots: true,
-                    nav: true,
-                    rtl:true,
-                    margin: 10,
-                    smartSpeed: 200,
-                    slideSpeed: 500,
-                    navText: ['<i class="fa fa-angle-left"></i>', '<i class="fa fa-angle-right"></i>'],
-                    slideBy: slidesPerPage, //alternatively you can slide by 1, this way the active slide will stick to the first item in the second carousel
-                    responsiveRefreshRate: 100
-                }).on('changed.owl.carousel', syncPosition2);
-
-                function syncPosition(el) {
-                    //if you set loop to false, you have to restore this next line
-                    //var current = el.item.index;
-                    //if you disable loop you have to comment this block
-                    var count = el.item.count - 1;
-                    var current = Math.round(el.item.index - (el.item.count / 2) - .5);
-
-                    if (current < 0) {
-                        current = count;
-                    }
-                    if (current > count) {
-                        current = 0;
-                    }
-
-                    //end block
-                    sync2.find(".owl-item").removeClass("current").eq(current).addClass("current");
-                    var onscreen = sync2.find('.owl-item.active').length - 1;
-                    var start = sync2.find('.owl-item.active').first().index();
-                    var end = sync2.find('.owl-item.active').last().index();
-
-                    if (current > end) {
-                        sync2.data('owl.carousel').to(current, 100, true);
-                    }
-                    if (current < start) {
-                        sync2.data('owl.carousel').to(current - onscreen, 100, true);
-                    }
-                }
-
-                function syncPosition2(el) {
-                    if (syncedSecondary) {
-                        var number = el.item.index;
-                        sync1.data('owl.carousel').to(number, 100, true);
-                    }
-                }
-
-                sync2.on("click", ".owl-item", function (e) {
-                    e.preventDefault();
-                    var number = $(this).index();
-                    sync1.data('owl.carousel').to(number, 300, true);
-                });
-
-            })
+            this.Req_estate();
         } ,
 
         data() {
             return {
                 zoom: 16,
                 confirm_print : false ,
-                assignment_estate_loading : false
+                assignment_estate_loading : false ,
+                show_owner_info : false
             }
         } ,
 
@@ -575,7 +451,8 @@
                 'Single_estate',
                 'assignments' ,
                 'Auth' ,
-                'req_url'
+                'req_url' ,
+                'me'
             ]) ,
 
             Breadcrumb() {
@@ -623,11 +500,25 @@
             } ,
 
             estate_location() {
-                if (this.is_exist(this.Single_estate)) {
+                if ( this.is_exist(this.Single_estate) && this.is_exist(this.Single_estate.coordinates) ) {
                     return [this.Single_estate.coordinates.lat, this.Single_estate.coordinates.lat]
                 } else {
-                    return [0, 0]
+                    return null;
                 }
+            } ,
+
+            images() {
+                if(this.is_exist(this.Single_estate.photos)) {
+                    return this.Single_estate.photos;
+                } else {
+                    return null;
+                }
+            } ,
+
+            has_owner_info() {
+                return  !!this.Single_estate.landlord_fullname &&
+                        !!this.Single_estate.landlord_phone_number &&
+                        !!this.Single_estate.plaque
             }
 
         } ,
@@ -649,6 +540,226 @@
                 'Set_state'
             ]) ,
 
+            Req_estate() {
+
+                this.Set_state({ prop : 'Single_estate' , val : {} })
+                this.Set_state({ prop : 'loading' , val : true })
+
+                axios({
+                    method : 'POST' ,
+                    url : this.req_url ,
+                    data : {
+                        query: `
+                            {
+                                estate( id : "${this.$route.params.id}" ) {
+                                    id
+                                    code
+                                    title
+                                    description
+                                    landlord_fullname
+                                    landlord_phone_number
+                                    plaque
+                                    photos {
+                                        id
+                                        file_name
+                                        medium
+                                    }
+                                    registrar_type {
+                                        id
+                                        display_name
+                                        description
+                                    }
+                                    address
+                                    area
+                                    rental_price
+                                    mortgage_price
+                                    sales_price
+                                    spec {
+                                        id
+                                        title
+                                        headers {
+                                            id
+                                            title
+                                            description
+                                            rows {
+                                                id
+                                                title
+                                                description
+                                                icon
+                                                is_multiple
+                                                prefix
+                                                postfix
+                                                data {
+                                                    id
+                                                    data
+                                                    values {
+                                                        id
+                                                        value
+                                                    }
+                                                }
+                                                help
+                                            }
+                                        }
+                                    }
+                                    features {
+                                        id
+                                        icon
+                                        title
+                                    }
+                                    advantages
+                                    disadvantages
+                                    coordinates {
+                                        lat
+                                        lng
+                                    }
+                                    assignment {
+                                        id
+                                        title
+                                        color
+                                    }
+                                    estate_type {
+                                        id
+                                        title
+                                    }
+                                    street {
+                                        id
+                                        name
+                                        area {
+                                        id
+                                        }
+                                    }
+                                }
+                            }
+                        `
+                    }
+                })
+                .then( ({data}) => {
+                    console.log(data);
+                    if( !!data.errors ) {
+                        data.errors.forEach( Err => console.error(Err.message) )
+                    } else {
+                        this.Set_state({ prop : 'Single_estate' , val : data.data.estate })
+                    }
+                })
+                .then( () => {
+                    this.Jquery();
+                    setTimeout(() => {
+                        this.Set_state({ prop : 'loading' , val : false })
+                    }, 500);
+                })
+                .catch( Err => {
+                    if( Err.response && Err.response.status === 401 ) {
+                        window.localStorage.removeItem('JWT');
+                        location.reload();
+                    } else {
+                        console.log(Err);
+                    }
+                })
+
+            } ,
+
+            show_info() {
+                if( !!this.has_owner_info ) {
+                    this.show_owner_info = true;
+                } else if( this.Single_estate.registrar_type.id == 2 ) {
+                    this.show_owner_info = true;
+                } else if(!this.Auth) {
+                    this.notif( 'کاربر گرامی برای اعلام واگذازی ابتدا باید وارد سایت شوید' , 'warning' , 'error' );
+                    return;
+                } else if( this.Auth && !!this.has_owner_info ) {
+                    if( this.me.visited_estate_count == 0 ) {
+                        this.notif( 'کاربر گرامی نسبت به خرید پنل اقدام نمایید' , 'warning' , 'error' );
+                    } else {
+                        this.notif( 'کاربر گرامی اعتبار شما برای این اقدام کافی نیست' , 'warning' , 'error' );
+                    }
+                }
+            } ,
+
+            Jquery() {
+                $(document).ready(function () {
+
+                    // Background set
+                    $('.set-bg').each(function () {
+                        var bg = $(this).data('setbg');
+                        $(this).css('background-image', 'url(' + bg + ')');
+                    });
+
+                    // Review Slider
+                    var sync1 = $("#sl-slider");
+                    var sync2 = $("#sl-slider-thumb");
+                    var slidesPerPage = 4; //globaly define number of elements per page
+                    var syncedSecondary = true;
+
+                    sync1.owlCarousel({
+                        items: 1,
+                        rtl:true,
+                        slideSpeed: 2000,
+                        nav: false,
+                        autoplay: true,
+                        dots: true,
+                        loop: true,
+                        responsiveRefreshRate: 200,
+                    }).on('changed.owl.carousel', syncPosition);
+
+                    sync2.on('initialized.owl.carousel', function () {
+                        sync2.find(".owl-item").eq(0).addClass("current");
+                    }).owlCarousel({
+                        items: slidesPerPage,
+                        dots: true,
+                        nav: true,
+                        rtl:true,
+                        margin: 10,
+                        smartSpeed: 200,
+                        slideSpeed: 500,
+                        navText: ['<i class="fa fa-angle-left"></i>', '<i class="fa fa-angle-right"></i>'],
+                        slideBy: slidesPerPage, //alternatively you can slide by 1, this way the active slide will stick to the first item in the second carousel
+                        responsiveRefreshRate: 100
+                    }).on('changed.owl.carousel', syncPosition2);
+
+                    function syncPosition(el) {
+                        //if you set loop to false, you have to restore this next line
+                        //var current = el.item.index;
+                        //if you disable loop you have to comment this block
+                        var count = el.item.count - 1;
+                        var current = Math.round(el.item.index - (el.item.count / 2) - .5);
+
+                        if (current < 0) {
+                            current = count;
+                        }
+                        if (current > count) {
+                            current = 0;
+                        }
+
+                        //end block
+                        sync2.find(".owl-item").removeClass("current").eq(current).addClass("current");
+                        var onscreen = sync2.find('.owl-item.active').length - 1;
+                        var start = sync2.find('.owl-item.active').first().index();
+                        var end = sync2.find('.owl-item.active').last().index();
+
+                        if (current > end) {
+                            sync2.data('owl.carousel').to(current, 100, true);
+                        }
+                        if (current < start) {
+                            sync2.data('owl.carousel').to(current - onscreen, 100, true);
+                        }
+                    }
+
+                    function syncPosition2(el) {
+                        if (syncedSecondary) {
+                            var number = el.item.index;
+                            sync1.data('owl.carousel').to(number, 100, true);
+                        }
+                    }
+
+                    sync2.on("click", ".owl-item", function (e) {
+                        e.preventDefault();
+                        var number = $(this).index();
+                        sync1.data('owl.carousel').to(number, 300, true);
+                    });
+
+                })
+            } ,
+
             print(has_owner) {
 
                 this.confirm_print = false
@@ -667,7 +778,7 @@
 
             assignment_estate() {
                 if(!this.Auth) {
-                    this.notif( 'کاربر عزیز برای اعلام واگذازی ابتدا باید وارد سایت شوید' , 'warning' , 'error' );
+                    this.notif( 'کاربر گرامی برای اعلام واگذازی ابتدا باید وارد سایت شوید' , 'warning' , 'error' );
                     return;
                 } else {
                     
@@ -697,7 +808,14 @@
 
                         this.assignment_estate_loading = false;
                     })
-                    .catch( Err => console.log( Err ) )
+                    .catch( Err => {
+                        if( Err.response && Err.response.status === 401 ) {
+                            window.localStorage.removeItem('JWT');
+                            location.reload();
+                        } else {
+                            console.log(Err);
+                        }
+                    })
 
                 }
             } ,
@@ -761,7 +879,7 @@
     }
 
     .fs-20 {
-        font-size: 20px;
+        font-size: 20px !important;
     }
 
     .owner-info-print {
@@ -809,114 +927,6 @@
         color: #222222;
         font-weight: bold;
         margin-bottom: 20px;
-    }
-
-    /* 404 Not Found */
-
-    @import url('https://fonts.googleapis.com/css?family=Montserrat:400,600,700');
-    @import url('https://fonts.googleapis.com/css?family=Catamaran:400,800');
-    .error-container {
-        text-align: center;
-        font-size: 106px;
-        font-family: 'Catamaran', sans-serif;
-        font-weight: 800;
-        margin: 70px 15px;
-    }
-    .error-container > span {
-        display: inline-block;
-        position: relative;
-    }
-    .error-container > span.four {
-        width: 136px;
-        height: 43px;
-        border-radius: 999px;
-        background:
-            linear-gradient(140deg, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.07) 43%, transparent 44%, transparent 100%),
-            linear-gradient(105deg, transparent 0%, transparent 40%, rgba(0, 0, 0, 0.06) 41%, rgba(0, 0, 0, 0.07) 76%, transparent 77%, transparent 100%),
-            linear-gradient(to right, #d89ca4, #e27b7e);
-    }
-    .error-container > span.four:before,
-    .error-container > span.four:after {
-        content: '';
-        display: block;
-        position: absolute;
-        border-radius: 999px;
-    }
-    .error-container > span.four:before {
-        width: 43px;
-        height: 156px;
-        left: 60px;
-        bottom: -43px;
-        background:
-            linear-gradient(128deg, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.07) 40%, transparent 41%, transparent 100%),
-            linear-gradient(116deg, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.07) 50%, transparent 51%, transparent 100%),
-            linear-gradient(to top, #99749D, #B895AB, #CC9AA6, #D7969E, #E0787F);
-    }
-    .error-container > span.four:after {
-        width: 137px;
-        height: 43px;
-        transform: rotate(-49.5deg);
-        left: -18px;
-        bottom: 36px;
-        background: linear-gradient(to right, #99749D, #B895AB, #CC9AA6, #D7969E, #E0787F);
-    }
-
-    .error-container > span.zero {
-        vertical-align: text-top;
-        width: 156px;
-        height: 156px;
-        border-radius: 999px;
-        background: linear-gradient(-45deg, transparent 0%, rgba(0, 0, 0, 0.06) 50%,  transparent 51%, transparent 100%),
-            linear-gradient(to top right, #99749D, #99749D, #B895AB, #CC9AA6, #D7969E, #ED8687, #ED8687);
-        overflow: hidden;
-        animation: bgshadow 5s infinite;
-    }
-    .error-container > span.zero:before {
-        content: '';
-        display: block;
-        position: absolute;
-        transform: rotate(45deg);
-        width: 90px;
-        height: 90px;
-        background-color: transparent;
-        left: 0px;
-        bottom: 0px;
-        background:
-            linear-gradient(95deg, transparent 0%, transparent 8%, rgba(0, 0, 0, 0.07) 9%, transparent 50%, transparent 100%),
-            linear-gradient(85deg, transparent 0%, transparent 19%, rgba(0, 0, 0, 0.05) 20%, rgba(0, 0, 0, 0.07) 91%, transparent 92%, transparent 100%);
-    }
-    .error-container > span.zero:after {
-        content: '';
-        display: block;
-        position: absolute;
-        border-radius: 999px;
-        width: 70px;
-        height: 70px;
-        left: 43px;
-        bottom: 43px;
-        background: #FDFAF5;
-        box-shadow: -2px 2px 2px 0px rgba(0, 0, 0, 0.1);
-    }
-
-    .screen-reader-text {
-        position: absolute;
-        top: -9999em;
-        left: -9999em;
-    }
-        
-    @keyframes bgshadow {
-    0% {
-        box-shadow: inset -160px 160px 0px 5px rgba(0, 0, 0, 0.4);
-    }
-    45% {
-        box-shadow: inset 0px 0px 0px 0px rgba(0, 0, 0, 0.1);
-    }
-    55% {
-        box-shadow: inset 0px 0px 0px 0px rgba(0, 0, 0, 0.1);
-    }
-    100% {
-        box-shadow: inset 160px -160px 0px 5px rgba(0, 0, 0, 0.4);
-    }
     }
 
 </style>
