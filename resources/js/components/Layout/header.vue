@@ -12,8 +12,43 @@
                         </router-link>
 
                         <div v-if="!Res">
-                            <v-btn class="px-4" :color="web_color" dark round
-                                @click="Set_state({ prop : 'login_modal' , val : true })"> ورود / ثبت نام </v-btn>
+                            <div v-if="is_exist(me)">
+
+                            <vs-dropdown vs-custom-content vs-trigger-click >
+                                <vs-button class="user-full-name" :color="web_color" icon="expand_more" line-origin="right" type="line">
+                                    {{ me.full_name || me.email || me.username }}
+                                </vs-button>
+
+                                <vs-dropdown-menu class="loginx">
+                                    <v-list dense shaped>
+
+                                        <v-list-tile @click="$router.push('/panel')">
+                                            <v-list-tile-content>
+                                                <v-list-tile-title class="text-right"> پنل کاربری </v-list-tile-title>
+                                            </v-list-tile-content>
+                                            <v-list-tile-action>
+                                                <i class="fs-20 mr-2 lnr lnr-user"></i>
+                                            </v-list-tile-action>
+                                        </v-list-tile>
+
+                                        <v-list-tile @click="logOut">
+                                            <v-list-tile-content>
+                                                <v-list-tile-title class="text-right"> خروج از حساب </v-list-tile-title>
+                                            </v-list-tile-content>
+                                            <v-list-tile-action>
+                                                <i class="fs-20 mr-2 lnr lnr-exit"></i>
+                                            </v-list-tile-action>
+                                        </v-list-tile>
+
+                                    </v-list>
+                                </vs-dropdown-menu>
+                            </vs-dropdown>
+
+                            </div>
+                            <v-btn v-else class="px-4" :color="web_color" dark round
+                                @click="Set_state({ prop : 'login_modal' , val : true })">
+                                ورود / ثبت نام
+                            </v-btn>
                         </div>
 
                         <div id="nav-icon3" :class="{ 'open' : drawer }" v-show="Res" @click="drawer = !drawer">
@@ -80,7 +115,7 @@
 
 <script>
 
-    import { mapMutations } from 'vuex';
+    import { mapState , mapMutations } from 'vuex';
     import mixin from '../../mixin';
 
     export default {
@@ -112,13 +147,20 @@
             return {
                 drawer : false ,
                 header_links : [
-                    { title : 'خرید' , link : '/properties' , icon : 'lnr-home' } ,
+                    { title : 'خرید' , link : { path : '/properties' } , icon : 'lnr-home' } ,
                     { title : 'رهن و اجاره' , link : '/properties' , icon : 'lnr-apartment' } ,
                     { title : 'مشاوربن املاک' , link : '/team' , icon : 'lnr-users' } ,
                     { title : 'وبلاگ' , link : '/blog' , icon : 'lnr-book' } ,
-                    { title : 'تماس باما' , link : '/contact' , icon : 'lnr-phone-handset' } ,
+                    { title : 'تست صفحه مشاور' , link : '/aaaa' , icon : 'lnr-phone-handset' } ,
                 ]
             }
+        } ,
+
+        computed : {
+            ...mapState([
+                'me' ,
+                'url'
+            ])
         } ,
 
         methods : {
@@ -135,13 +177,32 @@
                     this.Set_state({ prop : 'login_modal' , val : true })
                 }, 400);
 
+            } ,
 
+            logOut() {
+               window.localStorage.removeItem('JWT');
+               location.reload(); 
             }
 
         }
 
     }
 </script>
+
+<style>
+    
+    .user-full-name {
+        border-radius: 4px;
+    }
+
+    .user-full-name span.vs-button-linex {
+        height: 100%;
+        background: transparent !important;
+        border-bottom: 2px solid #29B6F6;
+        border-radius: 4px;
+    }
+
+</style>
 
 <style scoped>
 

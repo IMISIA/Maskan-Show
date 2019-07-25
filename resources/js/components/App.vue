@@ -48,7 +48,15 @@
                             ></v-text-field>
                         </div>
 
-                        <v-btn class="text-white" :color="web_color" :disabled="!valid_login" block round> ورود </v-btn>
+                        <v-btn class="text-white"
+                            :color="web_color"
+                            :disabled=" !valid_login || login.loading "
+                            :loading="login.loading"
+                            block
+                            round
+                            @click="user_login">
+                            ورود
+                        </v-btn>
 
                         <div class="text-center mt-3">
                             <span class="fs-12"> کاربر جدید هستید؟ </span>
@@ -107,14 +115,15 @@
                                 </div>
 
                                 <div class="col-sm-6">
-                                    <h6 class="rtl bold required"> کد معرف </h6>
+                                    <h6 class="rtl bold required"> تلفن تماس </h6>
                                     <v-text-field
                                         class="small-text-field"
-                                        v-model="register.reagent_code"
-                                        label=" برای مثال imisia"
+                                        v-model="register.phone_number"
+                                        label="شماره تماس خود را وارد کنید"
                                         reverse
                                         outline
                                         single-line
+                                        type="number"
                                         :rules="[rules.required]"
                                     ></v-text-field>
                                 </div>
@@ -145,7 +154,7 @@
                                     ></v-text-field>
                                 </div>
 
-                                <div class="col-sm-6">
+                                <div class="col-sm-12">
                                     <h6 class="rtl bold required"> پست الکترونیک </h6>
                                     <v-text-field
                                         class="small-text-field"
@@ -156,20 +165,6 @@
                                         single-line
                                         type="email"
                                         :rules="[rules.required,rules.email]"
-                                    ></v-text-field>
-                                </div>
-
-                                <div class="col-sm-6">
-                                    <h6 class="rtl bold required"> تلفن تماس </h6>
-                                    <v-text-field
-                                        class="small-text-field"
-                                        v-model="register.phone_number"
-                                        label="شماره تماس خود را وارد کنید"
-                                        reverse
-                                        outline
-                                        single-line
-                                        type="number"
-                                        :rules="[rules.required]"
                                     ></v-text-field>
                                 </div>
 
@@ -206,8 +201,8 @@
                             </div>
 
                             <transition name="fade" mode="out-in">
-                                <v-btn class="text-white" color="#00E676" v-if="!is_consultant"
-                                    :disabled="!valid_steps.step_1" @click="stepper=stepper"> ثبت نام </v-btn>
+                                <v-btn class="text-white" color="#00E676" v-if="!is_consultant" :loading="register.loading"
+                                    :disabled="!valid_steps.step_1 || register.loading" @click="user_register"> ثبت نام </v-btn>
                                 <v-btn color="info" v-if="is_consultant"
                                     :disabled="!valid_steps.step_1" @click="stepper = 2"> بعدی </v-btn>
                             </transition>
@@ -235,25 +230,40 @@
                                 </div>
 
                                 <div class="col-sm-6">
-                                    <h6 class="rtl bold required"> شهر </h6>
+                                    <h6 class="rtl bold"> شماره تلفن املاک </h6>
                                     <v-text-field
                                         class="small-text-field"
-                                        value="مشهد"
-                                        readonly
-                                        label="نام شهر خود را وارد کنید"
+                                        v-model="register.estate_info.phone_number"
+                                        label="شماره تماس املاک را وارد کنید"
                                         reverse
+                                        type="number"
                                         outline
                                         single-line
-                                        :rules="[rules.required]"
                                     ></v-text-field>
                                 </div>
 
-                                <div class="col-sm-12 mb-4">
+                                <div class="col-sm-6 mb-4">
                                     <h6 class="rtl bold required"> منطقه </h6>
                                     <el-select class="w-100" v-model="register.estate_info.area" placeholder="منطقه">
                                         <el-option v-for="item in city_areas" :key="item.id" :label="item.name" :value="item.id">
                                         </el-option>
                                     </el-select>
+                                </div>
+
+                                <div class="col-sm-6">
+                                    <h6 class="rtl bold required"> نام کاربری ملک </h6>
+                                    <v-text-field
+                                        class="small-text-field"
+                                        v-model="register.estate_info.username"
+                                        label="نام املاک خود را وارد کنید"
+                                        :hint="`لینک صفحه شما : 
+                                        www.MaskanShow.ir/<b>${register.estate_info.username}</b>`"
+                                        persistent-hint
+                                        reverse
+                                        outline
+                                        single-line
+                                        :rules="[rules.required]"
+                                    ></v-text-field>
                                 </div>
 
                                 <div class="col-md-12">
@@ -263,17 +273,39 @@
                                         label="آدرس خود را  وارد کنید "
                                         outline
                                         reverse
+                                        :rows="3"
                                         name="input-7-4"
                                         :rules="[rules.required]"
                                     ></v-textarea>
+                                </div>
 
+                                <div class="col-md-12">
+                                    <h6 class="rtl bold"> توضیحات </h6>
+                                    <v-textarea
+                                        v-model="register.estate_info.description"
+                                        label="توضیحات خود را  وارد کنید "
+                                        outline
+                                        reverse
+                                        :rows="1"
+                                        name="input-7-4"
+                                    ></v-textarea>
                                 </div>
 
                             </div>
 
-                            <v-btn class="text-white" color="#00E676"
-                                :disabled="!valid_steps.step_2 && !valid_steps.step_2" @click="stepper=stepper"> ثبت نام </v-btn>
+                            <v-btn class="text-white" color="#00E676" :loading="register.loading"
+                                :disabled="!valid_steps.step_2 || register.loading" @click="user_register"> ثبت نام </v-btn>
                             <v-btn @click="stepper = 1"> قبلی </v-btn>
+
+                            <v-text-field
+                                class="small-text-field w-50 d-inline-block"
+                                v-model="register.estate_info.reagent_code"
+                                label="کد معرف  دارید ؟"
+                                reverse
+                                hide-details
+                                outline
+                                single-line
+                            ></v-text-field>
 
                         </v-form>
                     </v-stepper-content>
@@ -290,7 +322,7 @@
 
     import mixin from '../mixin';
     import {
-        mapState,
+        mapState ,
         mapMutations
     } from 'vuex';
 
@@ -304,6 +336,7 @@
 
         data() {
             return {
+
                 stepper : 1 ,
 
                 valid_login : false ,
@@ -315,33 +348,38 @@
                 is_consultant : false ,
 
                 login : {
-                    email : '' ,
+                    email : 'imisia99@owner.com' ,
                     password : {
-                        value : '' ,
+                        value : '123456' ,
                         show : false
-                    }
+                    } ,
+                    loading : false
                 } ,
 
                 register : {
-                    reagent_code : '' ,
-                    username : '' ,
-                    first_name : '' ,
-                    last_name : '' ,
+                    username : 'aaaaa' ,
+                    first_name : '2' ,
+                    last_name : '2' ,
+                    email : 'aaa@aaa.com' ,
                     password : {
                         show : false ,
-                        value : '' ,
+                        value : '2' ,
                     } ,
                     confirm_password : {
                         show : false ,
-                        value : '' ,
+                        value : '2' ,
                     } ,
-                    phone_number : '' ,
+                    phone_number : '09154188517' ,
                     estate_info : {
-                        name : '' ,
-                        city : 130 ,
+                        name : 'a' ,
+                        phone_number : '09154188517' ,
+                        reagent_code : '' ,
+                        username : 'aaaaa' ,    
                         area : '' ,
-                        address : '' ,
-                    }
+                        address : 'asdf' ,
+                        description : 'asd'
+                    } ,
+                    loading : false
                 } ,
 
                 rules : {
@@ -362,7 +400,8 @@
                 'loading',
                 'register_modal' ,
                 'city_areas' ,
-                'Auth'
+                'Auth' ,
+                'req_url'
             ]) ,
 
             match_pass() {
@@ -535,6 +574,130 @@
                 setTimeout(() => {
                     this.Set_state({ prop : 'register_modal' , val : true })
                 }, 300);
+            } ,
+
+            user_register() {
+
+                this.register.loading = true;
+
+                let query_consultant = `
+                    office_name : "${this.register.estate_info.name}" ,
+                    office_phone_number : "${this.register.estate_info.phone_number}" ,
+                    ${ !!this.register.estate_info.area ? `office_area_id : ${this.register.estate_info.area} ,` : '' }
+                    office_username : "${this.register.estate_info.username}" ,
+                    office_address : "${this.register.estate_info.address}" ,
+                    office_description : "${this.register.estate_info.description}" ,
+                    reagent_code : "${this.register.estate_info.reagent_code}" ,
+                `
+
+                axios({
+                    method : 'POST' ,
+                    url : this.req_url ,
+                    data : {
+                        query : `
+                            mutation {
+                                ${ this.is_consultant ? 'registerConsultant' : 'register' } (
+                                    username : "${this.register.username}" ,
+                                    phone_number : "${this.register.phone_number}" ,
+                                    first_name : "${this.register.first_name}" ,
+                                    last_name : "${this.register.last_name}" ,
+                                    email : "${this.register.email}" ,
+                                    password : "${this.register.password.value}" ,
+                                    password_confirmation : "${this.register.confirm_password.value}" ,
+                                    ${ this.is_consultant ? query_consultant : '' }
+                                ) {
+                                    id
+                                    token
+                                    system_authentication_code
+                                }
+                            }                            
+                        `
+                    }
+                })
+                .then( ({data}) => {
+                    if( this.is_exist(data) &&
+                        this.is_exist(data.data) &&
+                        ( this.is_exist(data.data.register) || this.is_exist(data.data.registerConsultant) ) &&
+                        ( this.is_exist(data.data.register.token) || this.is_exist(data.data.registerConsultant.token) )
+                    ) {
+                        window.localStorage.setItem( 'JWT' , data.data.register.token );
+                        window.localStorage.setItem( 'SAC' , data.data.register.system_authentication_code );
+                        location.reload();
+                    } else if(
+                        this.is_exist(data) &&
+                        this.is_exist(data.errors) &&
+                        this.is_exist(data.errors[0].validation)
+                    ) {
+                        Object.keys(data.errors[0].validation).map( el => {
+                            this.notif( data.errors[0].validation[el].join(' ، ') , 'warning' , 'error' , 5000 )
+                        })
+                        this.register.loading = false;
+                    }
+                })
+                .catch( Err => {
+                    window.localStorage.removeItem('JWT');
+                    location.reload();
+                    console.log(Err);
+                })
+
+            } ,
+
+            user_login() {
+
+                this.login.loading = true;
+
+                axios({
+                    method : 'POST' ,
+                    url : this.req_url ,
+                    data : {
+                        query : `
+                            mutation {
+                                login
+                                (
+                                    email : "${this.login.email}" ,
+                                    password : "${this.login.password.value}"
+                                )
+                                {
+                                    token
+                                    
+                                }
+                            }                            
+                        `
+                    } ,
+                    headers : {
+                        'SystemAuthenticationCode' : localStorage.getItem('SAC') ,
+                    }
+                })
+                .then( ({data}) => {
+                    if( this.is_exist(data) &&
+                        this.is_exist(data.data) &&
+                        this.is_exist(data.data.login) &&
+                        this.is_exist(data.data.login.token) &&
+                        this.is_exist(data.data.login.system_authentication_code)
+                    ) {
+                        window.localStorage.setItem( 'JWT' , data.data.login.token );
+                        window.localStorage.setItem( 'SAC' , data.data.login.system_authentication_code );
+                        location.reload();
+                    } else if(data.status == 403) {
+                        let message = `
+                            این حساب بر روی دستگاه شما قابل دسترس نیست ،
+                             در صورتی که این حساب متعلق به شماست برای فعال کردن آن با پشتیبانی سایت در ارتباط باشید
+                        `
+                        this.notif( message , 'warning' , 'error' , 20000 )
+                    } else {
+                        this.notif( 'نام کاربری یا رمز عبور اشتباه است' , 'warning' , 'error' )
+                        this.login.loading = false;
+                    }
+                })
+                .catch( Err => {
+                    if( Err.response && Err.response.status === 401 ) {
+                        window.localStorage.removeItem('JWT');
+                        location.reload();
+                    } else {
+                        console.log(Err);
+                    }
+                })
+
             }
 
         }

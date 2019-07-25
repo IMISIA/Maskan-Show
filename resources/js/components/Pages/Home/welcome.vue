@@ -12,7 +12,7 @@
                     <div class="welcome_text">
                         <h4> به <span class="web-color"> "مسکن شو" </span> خوش آمدید </h4>
                         <p> لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است. چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد. </p>
-                        <div class="row">
+                        <div class="row" v-if="false">
                             <div class="col-sm-4">
                                 <div class="wel_item">
                                     <i class="lnr lnr-database web-color"></i>

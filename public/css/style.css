@@ -773,7 +773,8 @@ p {
 }
 
 .banner_area .banner_inner .overlay {
-  background: url(../img/banner/banner.jpg) no-repeat scroll center center;
+  background: url(/img/home.jpg) no-repeat scroll center center;
+  background-size: cover !important;
   position: absolute;
   left: 0;
   right: 0;
@@ -2404,7 +2405,7 @@ p {
 }
 
 b, sup, sub, u, del {
-  color: #f8b600;
+  color: #29B6F6 !important;
 }
 
 h1 {

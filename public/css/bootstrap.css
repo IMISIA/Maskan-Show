@@ -8590,6 +8590,9 @@ a.text-dark:focus, a.text-dark:hover {
   .py-xs-5 {
       padding-top: 3rem !important
   }
+  .py-xs-65 {
+      padding-top: 65px !important
+  }
   .pr-xs-5,
   .px-xs-5 {
       padding-right: 3rem !important

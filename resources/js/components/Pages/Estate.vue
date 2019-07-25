@@ -20,14 +20,23 @@
                 <div class="d-flex">
                     <div class="w-50">
                         <span> نام مالک : </span>   
-                        <span class="mr-3"> سید ایمان اصنافی </span>
+                        <span class="mr-3"> {{ Single_estate.landlord_fullname }} </span>
                     </div>
 
                     <div class="w-50">
                         <span> شماره تماس : </span>   
-                        <span class="mr-3"> 09154188571 </span>
+                        <span class="mr-3"> {{ Single_estate.landlord_phone_number }} </span>
                     </div>
+                </div>
 
+                <div class="mt-3">
+                    <span> آدرس  کامل : </span>   
+                    <span class="mr-3">
+                        {{  ( Single_estate.street && Single_estate.street.area ? Single_estate.street.area.name +' ، ' : '' ) +
+                            ( Single_estate.street ? Single_estate.street.name +' ، ' : '' ) +
+                            ( Single_estate.plaque ? Single_estate.address +' ، '+ `پلاک ${Single_estate.plaque}` : Single_estate.address )
+                        }}
+                    </span>
                 </div>
 
             </div>
@@ -47,7 +56,7 @@
                                 <div class="sl-title text-right mb-4">
 
                                     <h4>
-                                        <span class="normal"> {{ '#'+ ( Single_estate.code || Single_estate.id ) }} </span>
+                                        <span class="web-color"> {{ '#'+ Single_estate.id }} </span>
                                         {{ Single_estate.title ||
                                             Single_estate.assignment.title +' '+
                                             Single_estate.estate_type.title +' '+
@@ -56,7 +65,10 @@
 
                                     <p>
                                         <i class="fa fa-map-marker ml-2 fs-20 bold"></i>
-                                        {{ Single_estate.address }}
+                                        {{  ( Single_estate.street && Single_estate.street.area ? Single_estate.street.area.name +' ، ' : '' ) +
+                                            ( Single_estate.street ? Single_estate.street.name +' ، ' : '' ) +
+                                            Single_estate.address
+                                        }}
                                     </p>
 
                                 </div>
@@ -65,31 +77,29 @@
                                     <div class="read-more rtl">
                                         <div class="theme-btn">
 
-                                            <span v-if="assignment.has_sales_price">
-                                                {{ Single_estate.sales_price | num_to_fa }} <span class="fs-12 pr-1">
-                                                    تومان </span>
-                                            </span>
+                                            <div v-if="assignment.has_sales_price">
+                                                {{ Single_estate.sales_price | price }}
+                                                <span class="fs-12 pr-1 normal"> {{ label_price(Single_estate.sales_price) }} </span>
+                                            </div>
 
-                                            <span
-                                                v-else-if="!Res && assignment.has_mortgage_price && assignment.has_rental_price">
-                                                {{ Single_estate.mortgage_price | num_to_fa }} <span class="fs-12 ml-5">
-                                                    رهن </span>
-                                                {{ Single_estate.rental_price | num_to_fa }} <span class="fs-12"> اجاره
+                                            <div class="d-flex" v-else-if="assignment.has_mortgage_price && assignment.has_rental_price">
+                                                <div>
+                                                    {{ Single_estate.mortgage_price | price }}
+                                                    <span class="fs-12 normal"> {{ label_price(Single_estate.mortgage_price) }} رهن </span>
+                                                </div>
+                                                <span class="mx-3"> | </span>
+                                                <div>
+                                                    {{ Single_estate.rental_price | price }}
+                                                    <span class="fs-12 normal"> {{ label_price(Single_estate.rental_price) }} اجاره </span>
+                                                </div>
+                                            </div>
+
+                                            <div v-else>
+                                                {{ ( assignment.has_mortgage_price ? Single_estate.mortgage_price : Single_estate.rental_price) | price }}
+                                                <span class="fs-12 pr-1 normal">
+                                                    {{ label_price( assignment.has_mortgage_price ? Single_estate.mortgage_price : Single_estate.rental_price) }}
                                                 </span>
-                                            </span>
-
-                                            <span
-                                                v-else-if="Res && assignment.has_mortgage_price && assignment.has_rental_price">
-                                                {{ Single_estate.mortgage_price | filter_price }} <span
-                                                    class="fs-12 ml-3"> رهن </span>
-                                                {{ Single_estate.rental_price | filter_price }} <span class="fs-12">
-                                                    اجاره </span>
-                                            </span>
-
-                                            <span v-else>
-                                                {{ (Single_estate.mortgage_price || Single_estate.rental_price) | num_to_fa }}
-                                                <span class="fs-12 pr-1"> تومان </span>
-                                            </span>
+                                            </div>
 
                                         </div>
                                     </div>
@@ -136,7 +146,7 @@
                             <template v-if="is_exist(Single_estate.features)">
                                 <h3 class="sl-sp-title"> امکانات ملک </h3>
                                 <div class="row property-details-list rtl text-right">
-                                    <div class="col-md-6" v-for="item in Single_estate.features" :key="item.id">
+                                    <div class="col-md-6" v-for="item in asc_features" :key="item.id">
                                         <p>
                                             <v-icon> {{ item.icon || 'home'  }} </v-icon>
                                             <span class="text-secondary"> {{ item.title }} </span>
@@ -145,10 +155,12 @@
                                 </div>
                             </template>
 
-                            <h3 class="sl-sp-title text-right"> توضیحات </h3>
-                            <div class="description">
-                                <p> {{ Single_estate.description }} </p>
-                            </div>
+                            <template v-if="is_exist(Single_estate.description)">
+                                <h3 class="sl-sp-title text-right"> توضیحات </h3>
+                                <div class="description">
+                                    <p> {{ Single_estate.description }} </p>
+                                </div>
+                            </template>
 
                             <div class="row rtl">
 
@@ -206,27 +218,30 @@
 
                                 <template v-if="is_exist(images)">
                                     <h3 class="sl-sp-title"> عکس ها </h3>
+
                                     <div class="single-list-slider owl-carousel" id="sl-slider">
                                         <div class="sl-item set-bg" v-for="img in images" :key="img.id"
-                                            :data-setbg="img.medium">
+                                            :data-setbg="url+img.medium">
+                                        </div>
+                                    </div>
+
+                                    <div class="owl-carousel sl-thumb-slider mb-5" id="sl-slider-thumb">
+                                        <div class="sl-thumb set-bg" v-for="img in images" :key="img.id"
+                                            :data-setbg="url+img.medium">
                                         </div>
                                     </div>
                                 </template>
 
-                                <div class="owl-carousel sl-thumb-slider mb-5" id="sl-slider-thumb">
-                                    <div class="sl-thumb set-bg" v-for="img in images" :key="img.id"
-                                        :data-setbg="img.medium">
+                                <template v-if="is_exist(Single_estate.aparat_video)">
+                                    <h3 class="sl-sp-title"> فیلم ملک </h3>
+                                    <div class="perview-video">
+                                        <div id="81412734058">
+                                            <script type="text/JavaScript"
+                                                :src="`https://www.aparat.com/embed/${Single_estate.aparat_video}?data[rnddiv]=81412734058&data[responsive]=yes`">
+                                            </script>
+                                        </div>
                                     </div>
-                                </div>
-
-                                <h3 class="sl-sp-title" v-if="false"> فیلم ملک </h3>
-                                <div class="perview-video" v-if="false">
-                                    <div id="81412734058">
-                                        <script type="text/JavaScript"
-                                            src="https://www.aparat.com/embed/m9n6o?data[rnddiv]=81412734058&data[responsive]=yes">
-                                        </script>
-                                    </div>
-                                </div>
+                                </template>
 
                             </div>
 
@@ -250,7 +265,6 @@
                                 </l-map>
                             </template>
 
-
                         </div>
                     </div>
 
@@ -263,6 +277,10 @@
                                 :class="[ show_owner_info && has_owner_info ? 'border-bottom pb-2 mb-3' : 'mb-0' ]">
                                 
                                 <template v-if="show_owner_info && has_owner_info">
+                                    اطلاعات املاک
+                                </template>
+
+                                <template v-else>
                                         
                                     <v-btn
                                         :color="web_color"
@@ -273,24 +291,10 @@
                                         <span class="fs-13"> نمایش اطلاعات مالک </span>
                                     </v-btn>
 
-                                    <el-popover
-                                        placement="top"
-                                        width="190"
-                                        v-model="confirm_print">
-                                        <p class="text-center fs-12"> با اطلاعات مالک پرینت شود ؟ </p>
-                                        <div>
-                                            <el-button type="primary" size="mini" @click="print(true)"> بله </el-button>
-                                            <el-button size="mini" type="text" @click="print(false)"> نه </el-button>
-                                        </div>
-                                        <v-btn slot="reference" color="blue darken-2" fab dark small>
-                                            <v-icon>print</v-icon>
-                                        </v-btn>
-                                    </el-popover>
+                                    <v-btn slot="reference" color="blue darken-2" fab dark small @click="print(false)">
+                                        <v-icon>print</v-icon>
+                                    </v-btn>
 
-                                </template>
-
-                                <template v-else>
-                                    اطلاعات املاک
                                 </template>
 
                             </div>
@@ -312,6 +316,17 @@
                                     </div>
                                     <div class="col-7">
                                         <p class="mb-3 text-right"> {{ Single_estate.landlord_phone_number }} </p>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-10 mx-auto">
+                                        <p class="mb-3 fs-12 text-center">
+                                        {{  ( Single_estate.street && Single_estate.street.area ? Single_estate.street.area.name +' ، ' : '' ) +
+                                            ( Single_estate.street ? Single_estate.street.name +' ، ' : '' ) +
+                                            ( Single_estate.plaque ? Single_estate.address +' ، '+ `پلاک ${Single_estate.plaque}` : Single_estate.address )
+                                        }}
+                                        </p>
                                     </div>
                                 </div>
 
@@ -349,23 +364,35 @@
 
                         </div>
 
-                        <div class="author-card as-shadow border-radius rtl text-center" v-for="n in 5" :key="n">
+                        <template v-if=" is_exist(Single_estate.street) &&
+                                        is_exist(Single_estate.street.area) && is_exist(Single_estate.street.area.offices) ">
 
-                            <v-avatar :size="100" :color="web_color">
-                                <img src="https://cdn.vuetifyjs.com/images/john.jpg" alt="avatar">
-                            </v-avatar>
+                            <h5 class="title-last-estate">  املاک اطراف این ملک </h5>
 
-                            <div class="mt-3">
-                                <h5> امیر خدنگی </h5>
-                                <p class="text-muted fs-12 text-center"> مشاور املاک </p>
+                            <div class="row mx-0 author-card as-shadow border-radius rtl text-center"
+                                v-for="office in Single_estate.street.area.offices" :key="office.id">
+
+                                <router-link :to="{ path : '/properties' , query : { consultant : office.username } }" class="col-12 row">
+                                    <div class="col-5">
+                                        <v-avatar :size="80" :color="web_color">
+                                            <img :src=" office.owner.avatar ? url + office.owner.avatar.small : '/img/user.png' " alt="avatar">
+                                        </v-avatar>
+                                    </div>
+
+                                    <div class="col-7 title-info">
+                                        <h5> {{ office.name }} </h5>
+                                        <p class="text-muted fs-12 text-center mb-0"> مشاور املاک </p>
+                                    </div>
+
+                                </router-link>
+
+                                <div class="col-12 author-contact border-top mt-4">
+                                    <p class="text-center"><i class="fa fa-phone"></i> {{ office.phone_number }} </p>
+                                    <p class="text-center"><i class="fa fa-map-marker"></i> {{ office.address }} </p>
+                                </div>
+
                             </div>
-
-                            <div class="author-contact border-top">
-                                <p class="text-center"><i class="fa fa-phone"></i>(567) 666 121 2233</p>
-                                <p class="text-center"><i class="fa fa-map-marker"></i>ginawesley26@gmail.com</p>
-                            </div>
-
-                        </div>
+                        </template>
 
                     </div>
 
@@ -451,6 +478,7 @@
                 'Single_estate',
                 'assignments' ,
                 'Auth' ,
+                'url' ,
                 'req_url' ,
                 'me'
             ]) ,
@@ -465,7 +493,7 @@
                         {
                             text: this.Single_estate.assignment.title,
                             disabled: false,
-                            to: '/properties'
+                            to: `/properties?assignments=${this.Single_estate.assignment.id}`
                         },
                         {
                             text: this.Single_estate.title ||
@@ -501,7 +529,7 @@
 
             estate_location() {
                 if ( this.is_exist(this.Single_estate) && this.is_exist(this.Single_estate.coordinates) ) {
-                    return [this.Single_estate.coordinates.lat, this.Single_estate.coordinates.lat]
+                    return [this.Single_estate.coordinates.lat, this.Single_estate.coordinates.lng]
                 } else {
                     return null;
                 }
@@ -519,11 +547,26 @@
                 return  !!this.Single_estate.landlord_fullname &&
                         !!this.Single_estate.landlord_phone_number &&
                         !!this.Single_estate.plaque
+            } , 
+
+            asc_features() {
+                return _.orderBy( this.Single_estate.features , 'title' , 'asc' );
             }
 
         } ,
 
         filters: {
+
+            price(val) {
+                if(val < 1000000) {
+                    return (val/1000).toLocaleString('fa-IR')
+                } else if(val < 1000000000) {
+                    return (val/1000000).toLocaleString('fa-IR')
+                } else if(val > 1000000000) {
+                    return (val/1000000000).toLocaleString('fa-IR')
+                }
+            } ,
+
             filter_price(val) {
                 if (val < 1000000) {
                     return (Math.ceil(val / 1000)).toLocaleString('fa-IR') + ' ت';
@@ -531,6 +574,7 @@
                     return (Math.ceil(val / 1000000)).toLocaleString('fa-IR') + ' م';
                 }
             }
+
         } ,
 
         methods: {
@@ -564,6 +608,7 @@
                                         file_name
                                         medium
                                     }
+                                    aparat_video
                                     registrar_type {
                                         id
                                         display_name
@@ -625,7 +670,22 @@
                                         id
                                         name
                                         area {
-                                        id
+                                            id
+                                            name
+                                            offices {
+                                                id
+                                                name
+                                                username
+                                                address
+                                                phone_number
+                                                owner {
+                                                    avatar {
+                                                        id
+                                                        file_name
+                                                        small
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -661,13 +721,13 @@
             show_info() {
                 if( !!this.has_owner_info ) {
                     this.show_owner_info = true;
-                } else if( this.Single_estate.registrar_type.id == 2 ) {
+                } else if( this.Single_estate.registrar_type && this.Single_estate.registrar_type.id == 2 ) {
                     this.show_owner_info = true;
                 } else if(!this.Auth) {
                     this.notif( 'کاربر گرامی برای اعلام واگذازی ابتدا باید وارد سایت شوید' , 'warning' , 'error' );
                     return;
                 } else if( this.Auth && !!this.has_owner_info ) {
-                    if( this.me.visited_estate_count == 0 ) {
+                    if( this.me && this.me.visited_estate_count == 0 ) {
                         this.notif( 'کاربر گرامی نسبت به خرید پنل اقدام نمایید' , 'warning' , 'error' );
                     } else {
                         this.notif( 'کاربر گرامی اعتبار شما برای این اقدام کافی نیست' , 'warning' , 'error' );
@@ -799,7 +859,7 @@
                         }
                     })
                     .then( ({data}) => {
-
+                        console.log(data);
                         if( data.data.assignmentEstate.status == 200 ) {
                             this.notif( data.data.assignmentEstate.message , 'success' , 'check' )
                         } else {
@@ -852,6 +912,16 @@
                     return false;
                 }
                 return true;
+            } ,
+
+            label_price(val) {
+                if(val < 1000000) {
+                    return `هزار تومان`
+                } else if(val < 1000000000) {
+                    return `میلیون تومان`
+                } else if(val > 1000000000) {
+                    return `میلیارد تومان`
+                }
             }
 
         } ,
@@ -864,6 +934,12 @@
 
     .author-card .col-7 p {
         color: #222222;
+    }
+
+    .author-card .title-info {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
     }
 
     #create .v-speed-dial {
@@ -902,6 +978,13 @@
 </style>
 
 <style scoped>
+
+    .title-last-estate {
+        color: #484848;
+        margin-bottom: 25px;
+        text-align: center;
+        font-weight: 700;
+    }
 
     .advantages i {
         color: #00E676 !important;

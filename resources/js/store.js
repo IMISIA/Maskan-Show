@@ -20,6 +20,8 @@ const store = new Vuex.Store({
         // User Information
         me : {} ,
 
+        office : {} ,
+
         // ========== Filters States ========== //
         city_areas : [] ,
         area_streets : [] ,
@@ -175,7 +177,7 @@ const store = new Vuex.Store({
                     window.localStorage.removeItem('JWT');
                     location.reload();
                 } else {
-                    console.log(Err);
+                    console.error(Err);
                 }
             })
 

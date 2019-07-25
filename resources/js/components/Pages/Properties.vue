@@ -1,49 +1,90 @@
 <template>
     <div>
 
-        <section class="banner_area" v-if="!Res">
+        <section class="banner_area">
             <div class="banner_inner d-flex align-items-center">
                 <div class="overlay bg-parallax" data-stellar-ratio="0.9" data-stellar-vertical-offset="0"
                     data-background=""></div>
-                <div class="container text-right" style="margin-bottom: 120px;">
-                    <div class="banner_content">
-                        <div class="page_link rtl">
-                            <a href="index.html"> صفحه اصلی  </a>
-                            <i class="material-icons mx-2 fs-10"> arrow_back_ios </i>
-                            <a href="properties.html"> لیست املاک </a>
+
+                <div class="container mb-5 pb-5 profile-estate" v-if=" !Res && username_clt && is_exist(office) ">
+                    <div class="row rtl">
+
+                        <div class="col-md-10 text-right d-flex flex-column justify-content-around mt-xs-4">
+
+                            <div class="username"> {{ office.name }} </div>
+
+                            <div>
+                                <p class="mb-2 text-right">
+                                    <i class="fa fa-map-marker ml-2 fs-20 bold web-color"></i>
+                                    {{  ( office.area && office.area.name ? office.area.name +' ، ' : '' ) + office.address }}
+                                </p>
+
+                                <p class="mb-0 text-right">
+                                    <i class="fa fa-phone ml-2 fs-20 bold web-color"></i>
+                                    {{ office.phone_number }}
+                                </p>
+                            </div>
+
+
                         </div>
-                        <h2> لیست املاک </h2>
+
+                        <div class="col-md-2 text-left">
+                            <v-avatar
+                                color="teal"
+                                :size="130">
+                                <img
+                                    :src=" is_exist(office.owner) && office.owner.avatar ? url + office.owner.avatar.medium : '/img/user.png' "
+                                    :alt="office.name">
+                            </v-avatar>
+                        </div>
+
                     </div>
                 </div>
+
+                <div class="container mb-5 pb-5 rtl" v-if="!username_clt && !is_exist(office) ">
+                    <v-breadcrumbs :items="Breadcrumb">
+                        <template v-slot:divider>
+                            <v-icon>chevron_left</v-icon>
+                        </template>
+                    </v-breadcrumbs>
+                </div>
+
             </div>
         </section>
 
-        <!-- <vs-input class="mt-0 ml-auto" icon="attach_file" label-placeholder="کد ملک" v-model="input"/> -->
+        <div class="profile-estate responsive as-shadow" v-if=" Res && username_clt && is_exist(office) ">
+            <div class="container">
+                <div class="row rtl">
 
-        <!-- <el-select class="mt-4 pt-2" v-model="value" placeholder="املاک">
-            <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
-            </el-option>
-        </el-select> -->
+                    <div class="col-md-2 text-center">
+                        <v-avatar
+                            color="teal"
+                            :size="130">
+                            <img
+                                :src=" is_exist(office.owner) && office.owner.avatar ? url + office.owner.avatar.medium : '/img/user.png' "
+                                :alt="office.name">
+                        </v-avatar>
+                    </div>
 
-        <!-- <div class="block px-3 text-right">
-            <span> محدوده قیمت خرید </span>
-            <el-slider
-                v-model="prices.sales_price.value"
-                :mix="prices.sales_price.min"
-                :max="prices.sales_price.max"
-                :step="prices.sales_price.step"
-                :format-tooltip="formatSlider"
-                color="#222222"
-                range>
-            </el-slider>
-        </div> -->
+                    <div class="col-md-10 text-center d-flex flex-column justify-content-around mt-xs-4">
 
-        <!-- <div class="col-md-6 mt-3 as-px-4 text-right">
-            <span> : انتخاب کنید </span>
-            <el-checkbox-group class="mt-2" v-model="checkbox" size="small">
-                <el-checkbox-button v-for="city in cities" :label="city" :key="city">{{city}}</el-checkbox-button>
-            </el-checkbox-group>
-        </div> -->
+                        <div class="username"> {{ office.name }} </div>
+
+                        <p class="mt-3 mb-0 text-center">
+                            <i class="fa fa-map-marker ml-2 fs-20 bold web-color"></i>
+                            {{  ( office.area && office.area.name ? office.area.name +' ، ' : '' ) + office.address }}
+                        </p>
+
+                        <p class="mt-1 mb-0 text-center">
+                            <i class="fa fa-phone ml-2 fs-20 bold web-color"></i>
+                            {{ office.phone_number }}
+                        </p>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
 
         <div class="container filter-bar" v-if="!Res">
             <div class="row rtl p-5">
@@ -52,32 +93,31 @@
                     <i class="material-icons ">search</i>
                 </div>
 
-                <!-- City Areas -->
-                <div class="col-md-2">
-                    <el-select v-model="area_select" multiple collapse-tags placeholder="منطقه" @change="set_streets">
-                        <el-option v-for="item in city_areas" :key="item.id" :label="item.name" :value="item.id">
-                        </el-option>
-                    </el-select>
+                <div class="as-main-btn remove-filters hvr-ripple-out" @click="Delete_filters">
+                    <i class="material-icons">delete</i>
                 </div>
 
-                <!-- Streets -->
+                <!-- City Areas -->
                 <div class="col-md-2">
-                    <el-select v-model="street_select" placeholder="خیابان" no-data-text="منطقه انتخاب نشده">
-                        <el-option-group v-for="area in area_streets" :key="area.id" :label="area.name" :value="area.id">
-                            <el-option
-                                v-for="street in area.streets"
-                                :key="street.id"
-                                disabled
-                                :label="street.name"
-                                :value="street.id">
-                            </el-option>
-                        </el-option-group>
-                    </el-select>
+                    <el-cascader
+                        v-model="areas_select"
+                        :options="city_areas"
+                        :props="{
+                            expandTrigger: 'hover' ,
+                            label : 'name' ,
+                            value : 'id' ,
+                            children : 'streets' ,
+                            multiple : true ,
+                            checkStrictly : true
+                        }"
+                        :placeholder="set_disabled"
+                        collapse-tags>
+                    </el-cascader>
                 </div>
 
                 <!-- Assignments -->
                 <div class="col-md-2">
-                    <el-select v-model="assignments_select" placeholder="نوع واگذاری" @change="display_ranges">
+                    <el-select v-model="assignments_select" placeholder="نوع واگذاری" clearable @change="display_ranges">
                         <el-option v-for="item in assignments" :key="item.id" :label="item.title" :value="item.id">
                         </el-option>
                     </el-select>
@@ -86,7 +126,7 @@
                 <!-- Estate Types -->
                 <div class="col-md-2">
                     <el-select v-model="estate_types_select" @change="set_dynamic_filters"
-                        placeholder="نوع ملک" no-data-text="نوع واگذاری انتخاب نشده">
+                        placeholder="نوع ملک" clearable no-data-text="نوع واگذاری انتخاب نشده">
                         <el-option v-for="item in estate_types" :key="item.id" :label="item.title" :value="item.id">
                         </el-option>
                     </el-select>
@@ -163,8 +203,8 @@
                     </el-select>
                 </div>
 
-                <!-- Search -->
-                <div class="col-md-2 mt-3">
+                <!-- Code State -->
+                <div class="col-md-2">
                     <vs-input icon="search" label-placeholder="کد ملک" v-model="code_estate"/>
                 </div>
 
@@ -369,41 +409,7 @@
 
         <date-picker v-model="date" element="date-picker"></date-picker>
 
-        <section class="profile-estate mb-5 pt-xs-5">
-            <div class="container">
-                <div class="row rtl">
-
-                    <div class="col-md-2 text-center">
-                        <v-avatar
-                            color="teal"
-                            :size="130">
-                            <img v-if="true" src="/img/user.png" alt="avatar">
-                            <span v-else> اصنافی </span>
-                        </v-avatar>
-                    </div>
-
-                    <div class="col-md-10 d-flex flex-column justify-content-around mt-xs-4"
-                        :class="[ Res ? 'text-center' : 'text-right' ]">
-
-                        <div class="username"> سید ایمان اصنافی </div>
-
-                        <p class="mt-3 mb-0" :class="[ Res ? 'text-center' : 'text-right' ]">
-                            <i class="fa fa-map-marker ml-2 fs-20 bold web-color"></i>
-                            {{ 'خیابان سناباد ، سناباد 44 ، ساختمان 52' }}
-                        </p>
-
-                        <p class="mt-3 mb-0" :class="[ Res ? 'text-center' : 'text-right' ]">
-                            <i class="fa fa-phone ml-2 fs-20 bold web-color"></i>
-                            (567) 666 121 2233
-                        </p>
-
-                    </div>
-
-                </div>
-            </div>
-        </section>
-
-        <Estates :class="{ 'mb-5' : !(total > 1) }" title="ملک های سید ایمان اصنافی"></Estates>
+        <Estates :class="{ 'mb-5' : !(total > 1) }" :title="title"></Estates>
 
         <div class="properties_area mt-4" v-if="total > 1">
             <vs-pagination :color="web_color" :total="total" v-model="page"></vs-pagination>
@@ -434,25 +440,21 @@
 
                             <!-- City Areas -->
                             <div class="mb-4">
-                                    <el-select v-model="area_select" multiple collapse-tags placeholder="منطقه" @change="set_streets">
-                                        <el-option v-for="item in city_areas" :key="item.id" :label="item.name" :value="item.id">
-                                        </el-option>
-                                    </el-select>
-                            </div>
-
-                            <!-- Streets -->
-                            <div class="mb-4">
-                                <el-select v-model="street_select" placeholder="خیابان" no-data-text="منطقه انتخاب نشده">
-                                    <el-option-group v-for="area in area_streets" :key="area.id" :label="area.name" :value="area.id">
-                                        <el-option
-                                            v-for="street in area.streets"
-                                            :key="street.id"
-                                            disabled
-                                            :label="street.name"
-                                            :value="street.id">
-                                        </el-option>
-                                    </el-option-group>
-                                </el-select>
+                                <el-cascader
+                                    class="w-100"
+                                    v-model="areas_select"
+                                    :options="city_areas"
+                                    :props="{
+                                        expandTrigger: 'hover' ,
+                                        label : 'name' ,
+                                        value : 'id' ,
+                                        children : 'streets' ,
+                                        multiple : true ,
+                                        checkStrictly : true
+                                    }"
+                                    :placeholder="set_disabled"
+                                    collapse-tags>
+                                </el-cascader>
                             </div>
 
                             <!-- Assignments -->
@@ -484,7 +486,7 @@
 
                             <!-- Phone Owner -->
                             <div class="mb-4">
-                                <el-input placeholder="شماره تلفن مالک" v-model="phone_owner"></el-input>
+                                <el-input placeholder="شماره تلفن مالک" type="number" v-model="phone_owner"></el-input>
                             </div>
 
                             <!-- Area -->
@@ -555,7 +557,12 @@
                         </div>
                     </v-card-text>
 
-                    <v-btn :color="web_color_dark" dark large @click="Set_state({ prop : 'dialog_filters' , val : false })"> جستجو </v-btn>
+                    <div class="row m-0 mb-1">
+                        <v-btn :color="web_color_dark" dark large width="50%" @click="Apply_filters"> جستجو </v-btn>
+                        <v-btn color="#E91E63" dark large @click="Delete_filters">
+                            <v-icon dark>delete</v-icon>
+                        </v-btn>
+                    </div>
 
                 </v-card>
             </v-dialog>
@@ -580,73 +587,60 @@
         } ,
         
         created() {
-            this.Req_data({
-                query : `
-                    {
 
-                        areas {
-                            data {
-                                id
-                                name
-                                streets {
-                                id
-                                name
-                                }
-                            }
-                        }
+            if(this.username_clt) {
 
-                        estates( per_page : ${this.per_page} , page : 1 ) {
-                            data {
-                                id
-                                code
-                                title
-                                photos {
+                axios({
+                    method : 'POST' ,
+                    url : this.req_url ,
+                    data : {
+                        query : `
+                            {
+                                office( username : "${this.username_clt}" ) {
                                     id
-                                    file_name
-                                    medium
-                                }
-                                address
-                                area
-                                rental_price
-                                mortgage_price
-                                sales_price
-                                created_at
-                                registrar_type {
-                                    id
-                                    display_name
-                                    description
-                                }
-                                spec {
-                                    id
-                                    filters {
+                                    name
+                                    phone_number
+                                    area {
+                                    name
+                                    streets {
                                         id
-                                        icon
-                                        prefix
-                                        postfix
-                                        data {
-                                            values {
-                                                value
-                                            }
+                                        name
+                                    }
+                                    }
+                                    address
+                                    owner {
+                                        avatar {
+                                            id 
+                                            file_name
+                                            medium
                                         }
                                     }
                                 }
-                                assignment {
-                                    id
-                                    title
-                                    color
-                                }
-                                estate_type {
-                                    id
-                                    title
-                                }
                             }
-                            total
-                        }
+                        `
+                    }
+                })
+                .then( ({data}) => {
+                    if( this.is_exist(data.data.office) ) {
+                        this.Set_state({ prop : 'office' , val : data.data.office });
+                    }
+                })
+                .then( () => {
+                    this.Req_estates();
+                })
+                .catch( Err => {
+                    console.error(Err);
+                })
 
-                    }` ,
-                props : [ 'areas' , 'estates' ] ,
-                states : [ 'city_areas' , 'Estates' ] ,
-            })
+            } else {
+
+                this.Set_state({ prop : 'office' , val : {} })
+                this.Req_estates();
+
+            }
+
+            this.set_default_filters();
+
         } ,
 
         mounted() {
@@ -660,7 +654,9 @@
 
                 bind_filters : {} ,
 
-                area_select : [] ,
+                consultant : '' ,
+
+                areas_select : [] ,
                 street_select : '' ,
 
                 assignments_select : '' ,
@@ -851,6 +847,25 @@
                     default_label : 'اجاره'
                 } ,
 
+                query_fields : {
+                    search : 'query' ,
+                    code_estate : 'code' ,
+                    owner : 'landloard_fullname' ,
+                    phone_owner : 'landloard_phone_number' ,
+                    date : 'created_at' ,
+                    areas_select : 'areas' ,
+                    assignments_select : 'assignments' ,
+                    estate_types_select : 'estate_types' ,
+                    options_select : 'features'
+                } ,
+
+                ranges_fields : [
+                    'area' ,
+                    'sales_price' ,
+                    'mortgage_price' ,
+                    'rental_price'   
+                ] ,
+
                 page : 1 ,
                 per_page : 15 ,
 
@@ -867,16 +882,77 @@
                 'assignments' ,
                 'estate_types' ,
                 'dialog_filters' ,
-                'pagination'
+                'pagination',
+                'req_url' ,
+                'office'
             ]) ,
 
             total() {
                 return Math.ceil(this.pagination.total/this.per_page)
-            }
+            } ,
+
+            set_disabled() {
+
+                this.$store.state.city_areas.map( el => {
+                    el.streets.map( el => el.disabled = true )
+                })
+
+                return 'منطقه';
+            } ,
+
+            username_clt() {
+                return this.$route.params.username || null
+            } ,
+
+            title() {
+                if( this.username_clt && this.is_exist(this.office) ) {
+                    return `ملک های ${this.office.name}`
+                } else if( this.is_exist(this.Breadcrumb[2]) ) {
+                    return this.Breadcrumb[2].text
+                } else if( this.is_exist(this.$route.query.areas) ) {
+                    
+                }
+            } ,
+
+            Breadcrumb() {
+                
+                let assign = _.find( this.assignments , ['id', parseInt(this.$route.query.assignments)]);
+                let esatetType = _.find( this.estate_types , ['id', parseInt(this.$route.query.estate_types)])
+                let arr = [
+                    {
+                        text: 'خانه' ,
+                        disabled: false,
+                        to: '/'
+                    } ,
+                    {
+                        text: 'املاک' ,
+                        disabled: true ,
+                        to: '/'
+                    }
+                ]
+
+                if( this.is_exist(assign) && this.is_exist(esatetType) ) {
+                    arr.push({
+                        text: assign.title +' '+ esatetType.title ,
+                        disabled: true ,
+                        to: '/'
+                    })
+                } else if( this.is_exist(assign) || this.is_exist(esatetType) ) {
+                    arr.push({
+                        text: assign.title || esatetType.title ,
+                        disabled: true ,
+                        to: '/'
+                    })
+                }
+
+                return arr
+
+            } ,
 
         } ,
 
         watch : {
+
             page(val) {
                 this.Req_data({
                     query : `
@@ -913,6 +989,68 @@
                     states : ['Estates'] ,
                 })
             } ,
+
+            areas_select(val) {
+                if( typeof val != 'object' && !val ) this.areas_select = []
+            } ,
+
+            '$route.path'() {
+
+                if(this.username_clt) {
+
+                    axios({
+                        method : 'POST' ,
+                        url : this.req_url ,
+                        data : {
+                            query : `
+                                {
+                                    office( username : "${this.username_clt}" ) {
+                                        id
+                                        name
+                                        phone_number
+                                        area {
+                                        name
+                                        streets {
+                                            id
+                                            name
+                                        }
+                                        }
+                                        address
+                                        owner {
+                                        avatar {
+                                            id 
+                                            file_name
+                                            medium
+                                        }
+                                        }
+                                    }
+                                }
+                            `
+                        }
+                    })
+                    .then( ({data}) => {
+                        if( this.is_exist(data.data.office) ) {
+                            this.Set_state({ prop : 'office' , val : data.data.office });
+                        }
+                    })
+                    .then( () => {
+                        this.Apply_filters();
+                    })
+                    .catch( Err => {
+                        console.error(Err);
+                    })
+
+                } else {
+
+                    this.Set_state({ prop : 'office' , val : {} })
+                    this.Apply_filters();
+
+                }
+
+                this.set_default_filters();
+
+            }
+
         } ,
 
         methods : {
@@ -922,19 +1060,146 @@
                 'Set_state'
             ]) ,
 
+            Req_estates() {
+                this.Req_data({
+                    query : `
+                        {
+
+                            areas {
+                                data {
+                                    id
+                                    name
+                                    streets {
+                                    id
+                                    name
+                                    }
+                                }
+                            }
+
+                            estates(
+                                page : 1 ,
+                                per_page : ${this.per_page} ,
+                                ${ this.is_exist(this.office) && !!this.office.id ? `consultant : ${this.office.id} ,` : '' }
+                                query : "${this.$route.query.query || ''}" ,
+                                code : "${this.$route.query.code || ''}" ,
+                                landloard_fullname : "${this.$route.query.landloard_fullname || ''}" ,
+                                landloard_phone_number : "${this.$route.query.landloard_phone_number || ''}" ,
+                                created_at : "${this.$route.query.created_at || ''}" ,
+                                areas : [${this.$route.query.areas || ''}] ,
+                                assignments : [${this.$route.query.assignments || ''}] ,
+                                estate_types : [${this.$route.query.estate_types || ''}] ,
+                                features : [${this.$route.query.features || ''}] ,
+                                dynamic_filters : [${this.get_all_dynamic_filters()}] ,
+                                area : {
+                                    min : "${ this.$route.query.area ? this.$route.query.area[0] : ''}" ,
+                                    max : "${ this.$route.query.area ? this.$route.query.area[1] : ''}"
+                                } ,
+                                sales_price : {
+                                    min : "${ this.$route.query.sales_price ? this.$route.query.sales_price[0] : ''}" ,
+                                    max : "${ this.$route.query.sales_price ? this.$route.query.sales_price[1] : ''}"
+                                } ,
+                                mortgage_price : {
+                                    min : "${ this.$route.query.mortgage_price ? this.$route.query.mortgage_price[0] : ''}" ,
+                                    max : "${ this.$route.query.mortgage_price ? this.$route.query.mortgage_price[1] : ''}"
+                                } ,
+                                rental_price : {
+                                    min : "${ this.$route.query.mortgage_price ? this.$route.query.rental_price[0] : ''}" ,
+                                    max : "${ this.$route.query.mortgage_price ? this.$route.query.rental_price[1] : ''}"
+                                }
+                            ) {
+                                data {
+                                    id
+                                    code
+                                    title
+                                    is_mine
+                                    photos {
+                                        id
+                                        file_name
+                                        medium
+                                    }
+                                    address
+                                    area
+                                    rental_price
+                                    mortgage_price
+                                    sales_price
+                                    created_at
+                                    assignmented_at
+                                    want_cooperation
+                                    registrar_type {
+                                        id
+                                        display_name
+                                        description
+                                    }
+                                    creator {
+                                        id
+                                        first_name
+                                        last_name
+                                        full_name
+                                        avatar {
+                                            id
+                                            file_name
+                                            small
+                                        }
+                                    }
+                                    spec {
+                                        id
+                                        filters {
+                                            id
+                                            icon
+                                            prefix
+                                            postfix
+                                            data {
+                                                values {
+                                                    value
+                                                }
+                                            }
+                                        }
+                                    }
+                                    assignment {
+                                        id
+                                        title
+                                        color
+                                    }
+                                    estate_type {
+                                        id
+                                        title
+                                    }
+                                    street {
+                                        id
+                                        name
+                                        area {
+                                            id
+                                            name
+                                        }
+                                    }
+                                }
+                                total
+                            }
+
+                        }
+                    ` ,
+                    props : [ 'areas' , 'estates' ] ,
+                    states : [ 'city_areas' , 'Estates' ] ,
+                }) 
+            } ,
+
             Apply_filters() {
+
+                if(this.Res) this.Set_state({ prop : 'dialog_filters' , val : false })
+
                 this.Req_data({
                     query : `
                         {
                             estates(
                                     page : 1 ,
                                     per_page : ${this.per_page} ,
+                                    ${ this.is_exist(this.office) && !!this.office.id ? `consultant : ${this.office.id} ,` : '' }
                                     query : "${this.search}" ,
                                     code : "${this.code_estate}" ,
                                     landloard_fullname : "${this.owner}" ,
                                     landloard_phone_number : "${this.phone_owner}" ,
                                     created_at : "${this.date}" ,
-                                    areas : [${this.area_select}] ,
+                                    areas : [${this.areas_select.flat()}] ,
                                     assignments : [${this.assignments_select}] ,
                                     estate_types : [${this.estate_types_select}] ,
                                     features : [${this.estate_options}] ,
@@ -960,6 +1225,7 @@
                                     id
                                     code
                                     title
+                                    is_mine
                                     photos {
                                         id
                                         file_name
@@ -971,6 +1237,38 @@
                                     mortgage_price
                                     sales_price
                                     created_at
+                                    assignmented_at
+                                    want_cooperation
+                                    registrar_type {
+                                        id
+                                        display_name
+                                        description
+                                    }
+                                    creator {
+                                        id
+                                        first_name
+                                        last_name
+                                        full_name
+                                        avatar {
+                                            id
+                                            file_name
+                                            small
+                                        }
+                                    }
+                                    spec {
+                                        id
+                                        filters {
+                                            id
+                                            icon
+                                            prefix
+                                            postfix
+                                            data {
+                                                values {
+                                                    value
+                                                }
+                                            }
+                                        }
+                                    }
                                     assignment {
                                         id
                                         title
@@ -980,6 +1278,14 @@
                                         id
                                         title
                                     }
+                                    street {
+                                        id
+                                        name
+                                        area {
+                                            id
+                                            name
+                                        }
+                                    }
                                 }
                                 total
                             }
@@ -987,6 +1293,55 @@
                     props : ['estates'] ,
                     states : ['Estates'] ,
                 })
+
+                let query_str = {}
+                
+                Object.keys(this.query_fields).map( el => {
+                    if(this.is_exist(this[el])) {
+                        query_str[this.query_fields[el]] = this[el] 
+                    }
+                })
+
+                this.$router.replace({
+                    path : this.is_exist(this.$route.params) && !!this.$route.params.username ? '/'+this.$route.params.username : '/properties' ,
+                    query : query_str
+                })
+
+            } ,
+
+            Delete_filters() {
+
+                Object.keys(this.query_fields).map( el => {
+                    this[el] = '';
+                })
+
+                this.areas_select = []
+
+                this.ranges_fields.map( el => {
+                    this.Cansel(el);
+                })
+
+                this.Apply_filters();
+
+            } ,
+
+            set_default_filters() {
+
+                let query_str = this.$route.query;
+
+                Object.keys(this.query_fields).map( el => {
+                    if( eval(query_str[this.query_fields[el]]) ) {
+                        this[el] = eval(query_str[this.query_fields[el]]) || '';
+                    } else {
+                        this[el] = query_str[this.query_fields[el]] || '';
+                    }
+                })
+
+                this.ranges_fields.map( el => {
+                    this[el].min.value = query_str[el] && query_str[el][0] ? query_str[el][0] : '' 
+                    this[el].max.value = query_str[el] && query_str[el][1] ? query_str[el][1] : '' 
+                })
+
             } ,
 
             set_dynamic_filters() {
@@ -1022,15 +1377,6 @@
                     states : ['dynamic_filters'] ,
                     is_object : true
                 })
-            } ,
-
-            set_streets() {
-                let areas = []
-                this.area_select.map( el => {
-                    areas.push( _.find( this.city_areas , { id : el } ) );
-                })
-                this.Set_state({ prop : 'area_streets' , val : areas })
-                console.log(areas);
             } ,
 
             display_ranges() {
@@ -1123,6 +1469,18 @@
 
 <style>
 
+    .el-cascader__dropdown svg path {
+        fill: transparent !important;
+    }
+
+    .el-cascader-node>.el-checkbox {
+        margin-bottom: 0px !important;
+    }
+
+    .el-cascader-node__label {
+        font-size: 12px !important;
+    }
+
     .el-select-group__title {
         padding-left: 0px !important;
         padding-right: 20px !important;
@@ -1157,7 +1515,7 @@
     /*  Dialog Filters Styles  */
 
     .dialog_filters .el-input__inner {
-        height: 50px;
+        height: 50px !important;
         background: #f7f8fa;
         border: unset;
         border-radius: 7px;
@@ -1237,7 +1595,7 @@
         padding-right: 15px !important;
     }
 
-    .el-select .el-input__suffix {
+    .el-select .el-input__suffix , .el-cascader .el-input__suffix {
         left: 5px;
         right: unset !important;
     }
@@ -1384,6 +1742,18 @@
 
 <style scoped>
 
+    .profile-estate.responsive {
+        position: absolute;
+        background: #fff;
+        width: 70%;
+        padding: 30px;
+        border-radius: 20px;
+        top: 130px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 99;
+    }
+
     .profile-estate .username {
         font-weight: bold !important;
         font-size: 22px;
@@ -1408,13 +1778,30 @@
         box-shadow: 0px -2px 20px -13px #000 !important;
         background: #29B6F6;
         border-color: #29B6F6;
-        width: 70px;
-        height: 65px;
+        width: 65px;
+        height: 60px;
         border-radius: 18px;
         cursor: pointer;
         transition: all 300ms linear 0s;
         -webkit-transition: all 300ms linear 0s;
         -o-transition: all 300ms linear 0s;
+    }
+
+    .as-main-btn.remove-filters {
+        width: 45px;
+        height: 45px;
+        left: unset !important;
+        right: -20px !important;
+        background: #E91E63;
+        border-color: #E91E63;
+    }
+
+    .as-main-btn.remove-filters i {
+        font-size: 20px !important;
+    }
+    
+    .remove-filters.hvr-ripple-out:before {
+        border-color: #E91E63 !important;
     }
 
     .as-main-btn i {
@@ -1425,11 +1812,14 @@
         transform: rotateY(180deg);
     }
 
+    .remove-filters.as-main-btn:hover i {
+        transform: rotate(-20deg);
+    }
+
     .hvr-ripple-out:before {
         border-color: #29B6F6 !important;
         border-radius: 22px;
     }
-
 
     .filter-bar {
         background: #ffffff;

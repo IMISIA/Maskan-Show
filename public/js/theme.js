@@ -156,7 +156,7 @@
             })
         }
     }
-    clients_slider();
+    // clients_slider();
 	
 	/*----------------------------------------------------*/
     /*  Testimonials Slider

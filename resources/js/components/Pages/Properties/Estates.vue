@@ -1,9 +1,9 @@
 <template>
 
-    <section class="mt-xs-5 pt-xs-4">
+    <section class="mt-xs-5" :class="{ 'pt-xs-65' : Res && is_exist($route.params) }">
         <div class="container">
 
-            <div class="sec-title mb-xs-5">
+            <div class="sec-title mb-xs-5" :class="{ 'justify-content-end' : Res }">
 
                 <div class="d-flex align-items-center grid-list-btn" v-if="!Res">
                     <el-radio-group v-model="grid_list">
@@ -26,7 +26,7 @@
 
                 <div>
                     <span class="estates-title"> ... خونه جدیدت رو پیدا کن </span>
-                    <h2 :class="{ 'fs-20' : Res }"> {{ title || 'خرید و فروش آپارتمان' }} </h2>
+                    <h2 :class="{ 'fs-20' : Res }"> {{ title || 'ملک های مشهد' }} </h2>
                 </div>
 
             </div>
@@ -46,23 +46,37 @@
                 </div>
             </div>
 
-            <transition name="fade" mode="in-out">
-                <!-- Estates Grid -->
-                <div class="row rtl" v-if="grid_list || Res ">
-                    <div class="col-lg-4 col-md-6 ltr" v-for="(estate,index) in Estates" :key="index">
-                        <Estate-Grid :estate="estate"></Estate-Grid>
+            <template v-if="is_exist(Estates)">
+                <transition name="fade" mode="in-out">
+                    <!-- Estates Grid -->
+                    <div class="row rtl" v-if="grid_list || Res ">
+                        <div class="col-lg-4 col-md-6 ltr" v-for="(estate,index) in Estates" :key="index">
+                            <Estate-Grid :estate="estate"></Estate-Grid>
+                        </div>
                     </div>
-                </div>
-            </transition>
+                </transition>
 
-            <transition name="fade" mode="in-out">
-                <!-- Estates List -->
-                <div class="row list-estate" v-if=" !grid_list && !Res ">
-                    <div class="col-lg-12" v-for="(estate,index) in Estates" :key="index">
-                        <Estate-List :estate="estate"></Estate-List>
+                <transition name="fade" mode="in-out">
+                    <!-- Estates List -->
+                    <div class="row list-estate" v-if=" !grid_list && !Res ">
+                        <div class="col-lg-12" v-for="(estate,index) in Estates" :key="index">
+                            <Estate-List :estate="estate"></Estate-List>
+                        </div>
                     </div>
+                </transition>
+            </template>
+
+            <template v-else>
+                <div class="rtl p-5 pt-0 d-flex flex-column justify-content-center align-items-center">
+                    <i class="lnr lnr-magnifier fs-100"></i>
+                    <h3 class="mt-4"> متاسفانه ملکی پیدا نشد :( </h3>
+                    <h5 class="mt-3">
+                        برای دیدن ملک های بیشتر
+                        <a :href="$router.resolve({path: '/properties'}).href">اینجا</a>
+                        کلیک کنید
+                    </h5>
                 </div>
-            </transition>
+            </template>
 
         </div>
     </section>
@@ -102,6 +116,14 @@
 </script>
 
 <style>
+
+    .fs-100 {
+        font-size: 100px;
+    }
+
+    .pt-xs-65 {
+        padding-top: 65px !important;
+    }
 
     .grid-list-btn .v-image__image {
         border-radius: 0px !important

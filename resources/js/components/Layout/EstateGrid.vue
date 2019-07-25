@@ -3,34 +3,44 @@
         <div class="feature-item">
 
             <router-link :to=" 'estate/' + estate.id ">
+
                 <div class="feature-pic js-tilt bg-estate"
-                    :class="{ 'placeholder' : !img.has_img }"
-                    :style="{ backgroundImage : `url('${img.src}')` }">
+                    :class="{ 'placeholder' : !img.has_img , 'blur' : !!estate.assignmented_at }"
+                    :style="{ backgroundImage : `url('${ img.has_img ? url+img.src : img.src }')` }">
                 
-                    <div class="sale-notic" :style="{ background : estate.assignment.color + ' !important' }">
+                    <div class="sale-notic" :style="{ background : estate.assignment.color + ' !important' }"
+                        v-if="!!estate.assignment && !!estate.estate_type">
                         {{ estate.assignment.title +' '+ estate.estate_type.title }}
                     </div>
 
                     <div class="room-info text-left d-flex as-info pt-0">
-                        <div class="w-50" v-if="!!estate.registrar_type">
+                        <div class="w-50">
                             <el-tooltip
                                 class="item"
                                 effect="dark"
                                 placement="top-start"
-                                :disabled="!estate.registrar_type.description"
-                                :content="estate.registrar_type.description">
+                                :disabled="!(!!estate.registrar_type && !!estate.registrar_type.description)"
+                                :content="!!estate.registrar_type ? estate.registrar_type.description : ''">
                                 <p class="text-left">
                                     <i class="fa fa-user ml-0 ml-1"></i>
-                                    {{ 'توسط ' + estate.registrar_type.display_name }}
+                                    {{ 'توسط ' +
+                                    ( !!estate.is_mine ? 'شما' : (!!estate.registrar_type ? estate.registrar_type.display_name : 'مالک') ) }}
                                 </p>
                             </el-tooltip>
                         </div>
                         <div class="w-50 text-right mr-0 ml-1 rtl">
-                            <p><i class="fa fa-clock-o"></i> {{ estate.created_at | ago }} </p>
+                            <p><i class="fa fa-clock-o"></i> {{ estate.created_at | to_fa }} </p>
                         </div>	
                     </div>
 
                 </div>
+
+                <div class="assignmented" v-if="!!estate.assignmented_at">
+                    <div>
+                        <span class="stamp is-nope"> واگذار شده </span>
+                    </div>
+                </div>
+                
             </router-link>
 
             <div class="feature-text">
@@ -38,23 +48,26 @@
                 <div class="text-center feature-title rtl">
                     <router-link :to=" 'estate/' + estate.id ">
                             <h5 class="bold"> 
-                                <span class="normal"> {{ '#'+ ( estate.code || estate.id ) }} </span>
-                                {{ estate.title ||
-                                    estate.assignment.title +' '+
-                                    estate.estate_type.title +' '+
-                                    `${(estate.area).toLocaleString('fa-IR')} متری` 
-                                    | truncate( 30 - ( estate.code.length || estate.id.length ) ) }}
+                                <span class="web-color"> {{ '#'+ estate.id }} </span>
+                                {{ ( !!estate.title ? estate.title : '' ||
+                                    !!estate.assignment ? estate.assignment.title : '' +' '+
+                                    !!estate.estate_type ? estate.estate_type.title : '' +' '+
+                                    `${(estate.area).toLocaleString('fa-IR')} متری` )
+                                    | truncate( 30 - estate.id.toString().length ) }}
                             </h5>
                     </router-link>
-                    <p class="text-muted fs-12 rtl mt-2">
+                    <p class="text-muted fs-12 rtl mt-2 bold">
                         <i class="fa fa-map-marker fs-15 ml-1"></i>
-                        {{ estate.address | truncate(40) }} 
+                        {{  ( estate.street && estate.street.area ? estate.street.area.name +' ، ' : '' ) +
+                            ( estate.street ? estate.street.name +' ، ' : '' ) +
+                            estate.address | truncate(45)
+                        }}
                     </p>
                 </div>
 
                 <div class="room-info-warp rtl text-right">
                     <div class="row room-info">
-                        <template v-if="!!estate.spec">
+                        <template v-if=" !!estate.spec && typeof estate.spec.filters == 'object' && estate.spec.filters.length != 0 ">
                             <template v-for="spec in estate.spec.filters.slice(0,4)">
                                 <div class="col-6" v-if=" !!spec.data && !!spec.data.values && !!spec.data.values.length " :key="spec.id">
                                     <p class="hvr-icon-back">
@@ -87,8 +100,10 @@
                                 </div>
                             </div>
                             <div v-else>
-                                {{ (estate.mortgage_price || estate.rental_price) | price }}
-                                <span class="fs-12 pr-1 normal"> {{ label_price(estate.mortgage_price || estate.rental_price) }} </span>
+                                {{ ( assignment.has_mortgage_price ? estate.mortgage_price : estate.rental_price) | price }}
+                                <span class="fs-12 pr-1 normal">
+                                    {{ label_price( assignment.has_mortgage_price ? estate.mortgage_price : estate.rental_price) }}
+                                </span>
                             </div>
 
                         </div>
@@ -124,7 +139,9 @@
         filters : {
 
             price(val) {
-                if(val < 1000000) {
+                if(!val) {
+                    return 'توافقی'
+                } else if(val < 1000000) {
                     return (val/1000).toLocaleString('fa-IR')
                 } else if(val < 1000000000) {
                     return (val/1000000).toLocaleString('fa-IR')
@@ -134,10 +151,11 @@
             } ,
 
             multi_price(val) {
-                if(val < 1000000) {
+                if(!val) {
+                    return 'توافقی'
+                } else if(val < 1000000) {
                     return (val/1000).toLocaleString('fa-IR')
                 } else if(val < 1000000000) {
-                    console.log((val/1000000).toFixed(1));
                     return parseFloat((val/1000000).toFixed(1)).toLocaleString('fa-IR')
                 } else if(val > 1000000000) {
                     return parseFloat((val/1000000000).toFixed(2)).toLocaleString('fa-IR')
@@ -149,13 +167,14 @@
         computed : {
 
             ...mapState([
-                'assignments'
+                'assignments' ,
+                'url'
             ]) ,
 
             assignment() {
-                if( !(_.isEmpty(this.assignments) && !(_.isEmpty(this.estate.assignment.id)) ) ) {
+                if( !_.isEmpty(this.assignments) && !_.isEmpty(this.estate.assignment) && !!this.estate.assignment.id ) {
                     return this.assignments.filter( el => {
-                        if( el.id === this.estate.assignment.id ) {
+                        if( el.id == this.estate.assignment.id ) {
                             return {
                                 has_sales_price : el.has_sales_price ,
                                 has_rental_price : el.has_rental_price ,
@@ -197,7 +216,9 @@
             } ,
 
             label_price(val) {
-                if(val < 1000000) {
+                if(!val) {
+                    return '.';
+                } else if(val < 1000000) {
                     return `هزار تومان`
                 } else if(val < 1000000000) {
                     return `میلیون تومان`
@@ -207,7 +228,9 @@
             } ,
 
             label_multi_price(val) {
-                if(val < 1000000) {
+                if(!val) {
+                    return '.';
+                } else if(val < 1000000) {
                     return ``
                 } else if(val < 1000000000) {
                     return `م`
@@ -223,6 +246,21 @@
 </script>
 
 <style scoped>
+
+    .assignmented {
+        position: absolute;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        margin-top: 20%;
+        height: 100%;
+        width: 100%;
+        border-radius: 20px;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        left: 0;
+    }
 
     .el-card {
         overflow: visible;

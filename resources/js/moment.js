@@ -23,7 +23,7 @@ export default {
 
         //  HH:mm:ss
         to_fa(date) {
-            return moment(date).format('jYYYY-jMM-jDD')
+            return moment(date).format('jYYYY/jMM/jDD')
         } ,
 
         //  HH:mm:ss

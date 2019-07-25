@@ -27,16 +27,19 @@ let routes = [
         component : require('./components/Pages/single-blog.vue').default
     } ,
     {
-        path : '/contact' ,
-        component : require('./components/Pages/contact.vue').default
-    } ,
-    {
         path : '*' ,
         component : require('./components/Pages/404.vue').default
+    } ,
+    {
+        path : '/:username' ,
+        component : require('./components/Pages/Properties.vue').default
     } ,
 
 ]
 
 export default new VueRouter({
+    // fallback: true ,
+    // base : '/' ,
+    mode: 'history' ,
     routes
 })

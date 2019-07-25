@@ -50,31 +50,33 @@ export default {
 
         web_color_ultra_fade() {
             return Color(this.web_color).fade(0.97).rgb().string();
-        } ,
+        }
 
     } ,
 
     filters : {
-
         num_to_fa(val){
             return val ? val.toLocaleString('fa-IR') : 0 ;
         }
-
     } ,
 
     methods: {
 
         is_exist(val) {
-            return !(_.isEmpty(val))
+            if( !!val && typeof val == 'number' ) {
+                return true;
+            } else {
+                return !(_.isEmpty(val));
+            }
         } ,
 
-        notif( msg , color ,  icon )  {
+        notif( msg , color ,  icon , time = 3000 )  {
             this.$vs.notify({
                 text: `${msg}` ,
                 color: color ,
                 icon: icon ,
                 position: 'top-left',
-                time: 3000
+                time: time
             })
         } ,
 
