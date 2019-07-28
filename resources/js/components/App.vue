@@ -315,6 +315,12 @@
             </v-stepper>
         </vs-popup>
 
+        <div id="back-to-top">
+            <v-btn :color="web_color" fab dark @click="back_to_top">
+                <v-icon>expand_less</v-icon>
+            </v-btn>
+        </div>
+
     </div>
 </template>
 
@@ -331,12 +337,23 @@
         mixins: [mixin] ,
 
         created() {
+
+            var $vm = this
+            window.onscroll = function () {
+                if ( document.documentElement.scrollTop > 150 ) {
+                    $vm.btn_scroll = true;
+                } else {
+                    $vm.btn_scroll = false;
+                }
+            };
+
             this.App();
         } ,
 
         data() {
             return {
 
+                btn_scroll : false ,
                 stepper : 1 ,
 
                 valid_login : false ,
@@ -414,6 +431,12 @@
             
         } ,
 
+        watch : {
+            btn_scroll(val) {
+                val ? this.anime_btn(true) : this.anime_btn(false)
+            }
+        } ,
+
         methods: {
 
             ...mapMutations([
@@ -423,7 +446,7 @@
 
             App() {
 
-                let props = ['assignments', 'estate_types']
+                let props = [ 'siteSetting' , 'assignments', 'estate_types' , 'offices' ]
 
                 let me_query = `
                     me {
@@ -442,6 +465,46 @@
                 let query = `
                     {
                         ${ this.Auth ? me_query : '' }
+
+                        siteSetting {
+                            title
+                            description
+                            phone
+                            address
+                            banner_link
+                            banner {
+                                id
+                                file_name
+                                large
+                            }
+                            header_banner {
+                                id
+                                file_name
+                                large
+                            }
+                            theme_color
+                            is_enabled
+                            opinions {
+                                avatar {
+                                    id
+                                    file_name
+                                    thumb
+                                }
+                                fullname
+                                post
+                                opinion
+                            }
+                            posters {
+                                title
+                                description
+                                link
+                                image {
+                                    id
+                                    file_name
+                                    large
+                                }
+                            }
+                        }
 
                         assignments {
                             data {
@@ -462,6 +525,26 @@
                                 icon
                             }
                         }
+
+                        offices {
+                            data {
+                                id
+                                name
+                                username
+                                owner {
+                                    id
+                                    first_name
+                                    last_name
+                                    full_name
+                                    avatar {
+                                        id
+                                        file_name
+                                        small
+                                    }
+                                }
+                            }
+                        }
+
                     }
                 `
 
@@ -698,7 +781,22 @@
                     }
                 })
 
-            }
+            } ,
+
+            back_to_top() {
+                this.$vuetify.goTo( 0 , {
+                    duration : 1000 ,
+                })
+            } ,
+
+            anime_btn(enter) {
+                anime({
+                    targets : '#back-to-top' ,
+                    translateX: enter ? -100 : 100 ,
+                    duration : 500 ,
+                    easing: 'easeInOutBack'
+                })
+            } ,
 
         }
 
@@ -707,6 +805,18 @@
 </script>
 
 <style>
+
+    #back-to-top {
+        z-index: 999999;
+        position: fixed;
+        bottom: 20px;
+        right: -80px;
+    }
+
+    #back-to-top .v-btn--floating {
+        height: 50px !important;
+        width: 50px !important;
+    }
 
     .el-link.el-link--primary {
         color: #409EFF !important;

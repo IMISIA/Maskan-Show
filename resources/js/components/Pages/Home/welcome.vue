@@ -48,10 +48,10 @@
 
         mounted() {
 
-            $('.wel_item').tilt({
-                maxTilt: 5,
-                scale : 1.04
-            })
+            // $('.wel_item').tilt({
+            //     maxTilt: 5,
+            //     scale : 1.04
+            // })
 
         }
 

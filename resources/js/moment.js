@@ -47,5 +47,16 @@ export default {
         //     return numeral(price).format('0,0')
         // }
 
+    } ,
+
+    methods: {
+        to_en(date) {
+            if(date) {
+                return moment(date, 'jYYYY-jMM-jDD').format('YYYY-MM-DD');
+            } else {
+                return '';
+            }
+        }
     }
+
 }

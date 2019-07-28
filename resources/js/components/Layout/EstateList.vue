@@ -5,7 +5,7 @@
             <router-link class="col-md-4" :to=" 'estate/' + estate.id ">
                 
                 <div class="feature-pic js-tilt ltr bg-estate"
-                    :class="{ 'placeholder' : !img.has_img , 'blur' : !!estate.assignmented_at }"
+                    :class="{ 'placeholder' : !img.has_img , 'blur' : !!estate.assignmented_at || is_exist(estate.label) }"
                     :style="{ backgroundImage : `url('${ img.has_img ? url+img.src : img.src }')` }">
 
                     <div class="sale-notic" :style="{ background : estate.assignment.color + ' !important' }"
@@ -40,6 +40,15 @@
                         <span class="stamp is-nope"> واگذار شده </span>
                     </div>
                 </div>
+
+                <div class="assignmented" v-else-if="is_exist(estate.label)">
+                    <div>
+                        <span class="stamp is-nope"
+                            :style="{ color : `${estate.label.color} !important` , borderColor : `${estate.label.color} !important` }">
+                            {{ estate.label.title }}
+                        </span>
+                    </div>
+                </div>
                 
             </router-link>
 
@@ -48,7 +57,7 @@
                 <div class="text-center feature-title row">
 
                     <div class="col-md-7">
-                        <router-link :to=" 'estate/' + estate.id ">
+                        <router-link :to=" 'estate/' + ( this.$route.params.username && estate.code ? estate.code : estate.id ) ">
                             <h5 class="bold"> 
                                 <span class="web-color"> {{ '#'+ estate.id }} </span>
                                 {{ ( !!estate.title ? estate.title : '' ||
@@ -67,12 +76,30 @@
                         </p>
                     </div>
 
-                    <div class="col-md-5 border-right d-flex">
-                        <div>
-                            <div class="author-img set-bg" data-setbg="/img/author.jpg"></div>
+                    <div class="col-md-5 border-right d-flex" :class="{ 'blur' : !!estate.assignmented_at || is_exist(estate.label) }">
+                        <div class="flex-unset">
+                            <v-avatar :size="50">
+                                <img :src=" 
+                                    !( !!estate.assignmented_at || is_exist(estate.label) ) &&
+                                    estate.creator.is_public_info &&
+                                    !!estate.creator.avatar &&
+                                    !!estate.creator.avatar.small 
+                                        ? url + estate.creator.avatar.small
+                                        : '/img/user.png' "
+                                        alt="avatar">
+                            </v-avatar>
                         </div>
-                        <div class="px-3">
-                            <p class="author-p"> املاک مسکن شو (امیر خدنگی) </p>
+                        <div class="pr-4">
+                            <p class="author-p">
+                                {{
+                                    !( !!estate.assignmented_at || is_exist(estate.label) ) &&
+                                    estate.creator.is_public_info &&
+                                    !!estate.creator.full_name &&
+                                    estate.creator.full_name != " "
+                                    ? estate.creator.full_name
+                                    : 'ناشناس' 
+                                }}
+                            </p>
                             <p class="fs-10 text-danger bold" v-if="!estate.want_cooperation"> عدم تمایل همکاری با مشاورین املاک </p>
                         </div>
                     </div>
@@ -81,12 +108,35 @@
 
                 <div class="room-info-warp rtl text-right">
                     <div class="row room-info d-flex rtl">
-                        <template v-if=" !!estate.spec && typeof estate.spec.filters == 'object' && estate.spec.filters.length != 0 ">
-                            <template v-for="spec in estate.spec.filters.slice(0,6)">
-                                <div class="col-md-4" v-if=" !!spec.data && !!spec.data.values && !!spec.data.values.length " :key="spec.id">
+                        <template v-if="is_exist(estate.specifications)">
+                            <template v-for="spec in estate.specifications.slice(0,6)">
+                                <div class="col-md-4" v-if="is_exist(spec.data) || is_exist(spec.values)" :key="spec.id">
                                     <p class="hvr-icon-back">
                                         <i class="fa fa-building-o hvr-icon"></i>
-                                        {{ join_props( spec.data.values , spec.prefix , spec.postfix ) | truncate(25) }}
+                                        <template v-if="is_exist(spec.values)">
+                                            {{ join_props(
+                                                spec.values ,
+                                                spec.row ? spec.row.prefix : '' ,
+                                                spec.row ? spec.row.postfix : '' )
+                                                | truncate(25)
+                                            }}
+                                        </template>
+                                        <template v-else-if="is_exist(spec.data) && is_json(spec.data)">
+                                            {{ 
+                                                join_props( Json_parse(spec.data) ,
+                                                spec.row ? spec.row.prefix : '' ,
+                                                spec.row ? spec.row.postfix : '' )
+                                                | truncate(25)
+                                            }}
+                                        </template>
+                                        <template v-else-if="is_exist(spec.data) && !is_json(spec.data)">
+                                            {{ 
+                                                (spec.row ? spec.row.prefix +' ' : '') +
+                                                spec.data +' '+
+                                                spec.row ? spec.row.postfix : ''
+                                                | truncate(25)
+                                            }}
+                                        </template>
                                     </p>
                                 </div>
                             </template>
@@ -106,7 +156,7 @@
                                     {{ estate.mortgage_price | price }}
                                     <span class="fs-12 normal"> {{ label_price(estate.mortgage_price) }} رهن </span>
                                 </div>
-                                <span class="mx-3"> | </span>
+                                <span class="mx-3 line-price"> | </span>
                                 <div>
                                     {{ estate.rental_price | price }}
                                     <span class="fs-12 normal"> {{ label_price(estate.rental_price) }} اجاره </span>
@@ -131,13 +181,14 @@
 
 <script>
 
+    import mixin from '../../mixin';
     import moment from '../../moment';
     import { mapState } from 'vuex';
 
     export default {
 
         props : ['estate'] ,
-        mixins : [moment] ,
+        mixins : [mixin,moment] ,
 
         mounted() {
                 
@@ -199,6 +250,7 @@
         } ,
 
         methods : {
+
             join_props( values , prefix , postfix ) {
                 let arr = [];
                 
@@ -212,6 +264,19 @@
                 return arr.join(' ، ');
             } ,
 
+            Json_parse(val) {
+                return JSON.parse(val)
+            } ,
+
+            is_json(str) {
+                try {
+                    JSON.parse(str);
+                } catch (e) {
+                    return false;
+                }
+                return true;
+            } ,
+
             label_price(val) {
                 if(!val) {
                     return '.';
@@ -223,6 +288,7 @@
                     return `میلیارد تومان`
                 }
             }
+
         }
 
     }
@@ -230,6 +296,10 @@
 </script>
 
 <style>
+
+    .flex-unset {
+        flex: unset !important;
+    }
 
     .feature-pic.blur {
         filter: blur(2px);
@@ -267,7 +337,8 @@
         border: 0.5rem double #D23;
         transform: rotate(5deg);
         -webkit-mask-position: 2rem 3rem;
-        font-size: 2rem;  
+        font-size: 2rem;
+        text-align: center;  
     }
 
     .el-tooltip__popper {
@@ -278,6 +349,13 @@
         background-repeat: no-repeat;
         background-size: cover;
         background-position: top center;
+    }
+
+    .line-price {
+        color: #222222;
+        font-weight: bold;
+        font-size: 20px;
+        transform: rotate(20deg);
     }
 
 </style>

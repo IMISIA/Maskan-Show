@@ -7,6 +7,7 @@ const store = new Vuex.Store({
     state : {
 
         loading : true ,
+        siteSetting : {} ,
 
         dialog_filters : false ,
 
@@ -37,12 +38,12 @@ const store = new Vuex.Store({
                 filters : []
             }
         } ,
-
-        estate_options : [] ,
         // ========== End Of Filters States ========== //
 
         Estates : [] ,
         Single_estate : {} ,
+
+        offices : [] ,
 
         pagination : {
             total : ''

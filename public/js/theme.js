@@ -98,29 +98,6 @@
 //	/*----------------------------------------------------*/
 //    /*  Testimonials Slider
 //    /*----------------------------------------------------*/
-//    function testi_slider(){
-//        if ( $('.testi_slider').length ){
-//            $('.testi_slider').owlCarousel({
-//                loop:true,
-//                margin: 30,
-//                items: 2,
-//                nav: false,
-//                autoplay: false,
-//                smartSpeed: 1500,
-//                dots:true, 
-//                responsiveClass: true,
-//                responsive: {
-//                    0: {
-//                        items: 1,
-//                    },
-//                    576: {
-//                        items: 2,
-//                    }
-//                }
-//            })
-//        }
-//    }
-//    testi_slider();
 //	
 	/*----------------------------------------------------*/
     /*  Clients Slider
@@ -161,29 +138,6 @@
 	/*----------------------------------------------------*/
     /*  Testimonials Slider
     /*----------------------------------------------------*/
-    function testi_slider(){
-        if ( $('.testi_slider').length ){
-            $('.testi_slider').owlCarousel({
-                loop:true,
-                margin: 30,
-                items: 2,
-                nav: false,
-                autoplay: false,
-                smartSpeed: 1500,
-                dots:true, 
-                responsiveClass: true,
-                responsive: {
-                    0: {
-                        items: 1,
-                    },
-                    576: {
-                        items: 2,
-                    }
-                }
-            })
-        }
-    }
-    testi_slider();
 	
 	/*----------------------------------------------------*/
     /*  MailChimp Slider

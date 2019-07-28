@@ -1,27 +1,31 @@
 <template>
 
-    <section class="mt-xs-5" :class="{ 'pt-xs-65' : Res && is_exist($route.params) }">
+    <section class="mt-xs-5" :class="{ 'pt-xs-90' : Res && is_exist($route.params) }">
         <div class="container">
 
             <div class="sec-title mb-xs-5" :class="{ 'justify-content-end' : Res }">
 
-                <div class="d-flex align-items-center grid-list-btn" v-if="!Res">
-                    <el-radio-group v-model="grid_list">
-                        <el-radio-button :label="true">
-                            <v-img
-                                src="/img/gird.png"
-                                height="20px"
-                                width="20px">
-                            </v-img>
-                        </el-radio-button>
-                        <el-radio-button :label="false">
-                            <v-img
-                                src="/img/list.png"
-                                height="20px"
-                                width="20px">
-                            </v-img>
-                        </el-radio-button>
-                    </el-radio-group>
+                <div class="d-flex">
+                    <div class="d-flex align-items-center grid-list-btn" v-if="!Res">
+                        <el-radio-group v-model="grid_list">
+                            <el-radio-button :label="true">
+                                <v-img
+                                    src="/img/gird.png"
+                                    height="20px"
+                                    width="20px">
+                                </v-img>
+                            </el-radio-button>
+                            <el-radio-button :label="false">
+                                <v-img
+                                    src="/img/list.png"
+                                    height="20px"
+                                    width="20px">
+                                </v-img>
+                            </el-radio-button>
+                        </el-radio-group>
+                    </div>
+
+                    <slot name="sort"></slot>
                 </div>
 
                 <div>
@@ -101,7 +105,8 @@
 
         computed: {
             ...mapState([
-                'Estates'
+                'Estates' ,
+                'url'
             ])
         } ,
 
@@ -121,8 +126,8 @@
         font-size: 100px;
     }
 
-    .pt-xs-65 {
-        padding-top: 65px !important;
+    .pt-xs-90 {
+        padding-top: 90px !important;
     }
 
     .grid-list-btn .v-image__image {
@@ -132,8 +137,22 @@
     .grid-list-btn .el-radio-button__inner {
         padding: 10px 15px !important;
     }
+
+    .sort-btn .el-radio-button__inner {
+        padding: 13px 15px !important;
+    }
+
+    .sort-btn .el-radio-button__orig-radio:checked+.el-radio-button__inner {
+        color: #222222e0 !important;
+    }
     
     .grid-list-btn .el-radio-button__orig-radio:checked+.el-radio-button__inner {
+        background-color: #29b6f6 !important;
+        border-color: #29b6f6 !important;
+        box-shadow: 1px 3px 8px -4px #409EFF, 0px 2px 6px -6px #000 !important;
+    }
+
+    .sort-btn .el-radio-button__orig-radio:checked+.el-radio-button__inner {
         background-color: #29b6f6 !important;
         border-color: #29b6f6 !important;
         box-shadow: 1px 3px 8px -4px #409EFF, 0px 2px 6px -6px #000 !important;

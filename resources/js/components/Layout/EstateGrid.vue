@@ -5,7 +5,7 @@
             <router-link :to=" 'estate/' + estate.id ">
 
                 <div class="feature-pic js-tilt bg-estate"
-                    :class="{ 'placeholder' : !img.has_img , 'blur' : !!estate.assignmented_at }"
+                    :class="{ 'placeholder' : !img.has_img , 'blur' : !!estate.assignmented_at || is_exist(estate.label) }"
                     :style="{ backgroundImage : `url('${ img.has_img ? url+img.src : img.src }')` }">
                 
                     <div class="sale-notic" :style="{ background : estate.assignment.color + ' !important' }"
@@ -40,6 +40,15 @@
                         <span class="stamp is-nope"> واگذار شده </span>
                     </div>
                 </div>
+
+                <div class="assignmented" v-else-if="is_exist(estate.label)">
+                    <div>
+                        <span class="stamp is-nope"
+                            :style="{ color : `${estate.label.color} !important` , borderColor : `${estate.label.color} !important` }">
+                            {{ estate.label.title }}
+                        </span>
+                    </div>
+                </div>
                 
             </router-link>
 
@@ -48,7 +57,7 @@
                 <div class="text-center feature-title rtl">
                     <router-link :to=" 'estate/' + estate.id ">
                             <h5 class="bold"> 
-                                <span class="web-color"> {{ '#'+ estate.id }} </span>
+                                <span class="web-color"> {{ '#'+ ( this.$route.params.username && estate.code ? estate.code : estate.id ) }} </span>
                                 {{ ( !!estate.title ? estate.title : '' ||
                                     !!estate.assignment ? estate.assignment.title : '' +' '+
                                     !!estate.estate_type ? estate.estate_type.title : '' +' '+
@@ -67,14 +76,37 @@
 
                 <div class="room-info-warp rtl text-right">
                     <div class="row room-info">
-                        <template v-if=" !!estate.spec && typeof estate.spec.filters == 'object' && estate.spec.filters.length != 0 ">
-                            <template v-for="spec in estate.spec.filters.slice(0,4)">
-                                <div class="col-6" v-if=" !!spec.data && !!spec.data.values && !!spec.data.values.length " :key="spec.id">
+                        <template v-if="is_exist(estate.specifications)">
+                            <template v-for="spec in estate.specifications.slice(0,4)">
+                                <div class="col-6" v-if="is_exist(spec.data) || is_exist(spec.values)" :key="spec.id">
                                     <p class="hvr-icon-back">
                                         <i class="fa fa-building-o hvr-icon"></i>
-                                        {{ join_props( spec.data.values , spec.prefix , spec.postfix ) | truncate(15) }}
+                                        <template v-if="is_exist(spec.values)">
+                                            {{ join_props(
+                                                spec.values ,
+                                                spec.row ? spec.row.prefix : '' ,
+                                                spec.row ? spec.row.postfix : '' )
+                                                | truncate(15)
+                                            }}
+                                        </template>
+                                        <template v-else-if="is_exist(spec.data) && is_json(spec.data)">
+                                            {{ 
+                                                join_props( Json_parse(spec.data) ,
+                                                spec.row ? spec.row.prefix : '' ,
+                                                spec.row ? spec.row.postfix : '' )
+                                                | truncate(15)
+                                            }}
+                                        </template>
+                                        <template v-else-if="is_exist(spec.data) && !is_json(spec.data)">
+                                            {{ 
+                                                (spec.row ? spec.row.prefix +' ' : '') +
+                                                spec.data +' '+
+                                                spec.row ? spec.row.postfix : ''
+                                                | truncate(15)
+                                            }}
+                                        </template>
                                     </p>
-                                </div>	
+                                </div>
                             </template>
                         </template>
                     </div>
@@ -119,13 +151,14 @@
 
 <script>
 
+    import mixin from '../../mixin';
     import moment from '../../moment';
     import { mapState } from 'vuex';
 
     export default {
 
         props : ['estate'] ,
-        mixins : [moment] ,
+        mixins : [mixin,moment] ,
 
         mounted() {
 

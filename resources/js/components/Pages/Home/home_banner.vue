@@ -238,7 +238,7 @@
         mounted() {
 
             var typed = new Typed('#typed', {
-                strings: [" خونه جدیدت رو انتخاب کن " , "^250 به مسکن شو خوش آمدید"],
+                strings: [" خونه جدیدت رو پیدا کن " , "^250 به مسکن شو خوش آمدید"],
                 startDelay : 1000 ,
                 typeSpeed: 70 ,
                 backDelay : 2000 ,

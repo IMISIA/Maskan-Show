@@ -1,6 +1,31 @@
 <template>
     <div>
 
+        <!-- label For Assignmented Estate -->
+        <div class="container p-5 text-center"
+            v-if=" is_exist(Single_estate) && (!!Single_estate.assignmented_at || is_exist(Single_estate.label) ) ">
+            
+            <img class="label-estate" :src=" !!Single_estate.assignmented_at ? '/img/assignmented.svg' : '/img/label.svg' ">
+
+            <p class="mt-5 text-center" v-if="!!Single_estate.assignmented_at"> متاسفانه این ملک واگذار شده . </p>
+            <p class="mt-5 text-center" v-else> {{ Single_estate.label.description || Single_estate.label.title }} </p>
+
+            <p class="text-center">
+                {{ `برای دیدن ملک های  جدیدتر ، به صفحه ی 
+                ${ Single_estate.assignment ? Single_estate.assignment.title : '' }
+                ${ Single_estate.estate_type ? Single_estate.estate_type.title : '' }
+                ${ Single_estate.street && Single_estate.street.area ? 'املاک ' + Single_estate.street.area.name : '' }
+                بروید` }} 
+            </p>
+
+            <v-btn :color="web_color" dark round @click="push_link">
+                {{ `${ Single_estate.assignment ? Single_estate.assignment.title : '' }
+                ${ Single_estate.estate_type ? Single_estate.estate_type.title : '' }
+                ${ Single_estate.street && Single_estate.street.area ? 'املاک ' + Single_estate.street.area.name : '' }` }}       
+            </v-btn>
+
+        </div>
+
         <!-- Breadcrumb -->
         <div class="container pt-4" v-if="is_exist(Single_estate)">
             <div class="site-breadcrumb rtl as-shadow border-radius">
@@ -12,6 +37,7 @@
             </div>
         </div>
 
+        <!-- Owner Info In Pront Mode -->
         <div class="container owner-info-print">
             <div class="author-card as-shadow border-radius rtl text-center p-4">
 
@@ -42,7 +68,7 @@
             </div>
         </div>
 
-        <!-- Page -->
+        <!-- Details -->
         <section class="page-section" v-if="is_exist(Single_estate)">
             <div class="container">
                 <div class="row rtl">
@@ -58,8 +84,8 @@
                                     <h4>
                                         <span class="web-color"> {{ '#'+ Single_estate.id }} </span>
                                         {{ Single_estate.title ||
-                                            Single_estate.assignment.title +' '+
-                                            Single_estate.estate_type.title +' '+
+                                            (Single_estate.assignment ? Single_estate.assignment.title +' ' : '') +
+                                            (Single_estate.estate_type ? Single_estate.estate_type.title +' ' : '') +
                                             `${(Single_estate.area).toLocaleString('fa-IR')} متری` }}
                                     </h4>
 
@@ -87,7 +113,7 @@
                                                     {{ Single_estate.mortgage_price | price }}
                                                     <span class="fs-12 normal"> {{ label_price(Single_estate.mortgage_price) }} رهن </span>
                                                 </div>
-                                                <span class="mx-3"> | </span>
+                                                <span class="mx-3 line-price"> | </span>
                                                 <div>
                                                     {{ Single_estate.rental_price | price }}
                                                     <span class="fs-12 normal"> {{ label_price(Single_estate.rental_price) }} اجاره </span>
@@ -127,7 +153,7 @@
                                                             {{ join_props( item.data.values , item.prefix , item.postfix ) }}
                                                         </span>
 
-                                                        <span v-if="is_exist(item.data.data) && item.is_multiple && is_json(item.data.data)">
+                                                        <span v-else-if="is_exist(item.data.data) && item.is_multiple && is_json(item.data.data)">
                                                             {{ join_props( Json_parse(item.data.data) , item.prefix , item.postfix ) }}
                                                         </span>
 
@@ -283,6 +309,7 @@
                                 <template v-else>
                                         
                                     <v-btn
+                                        v-if=" !( !!Single_estate.assignmented_at || is_exist(Single_estate.label) ) "
                                         :color="web_color"
                                         class="white--text"
                                         round
@@ -400,6 +427,7 @@
             </div>
         </section>
 
+        <!-- Not Found Estate -->
         <section class="pt-5" v-if="!is_exist(Single_estate)">
             <div>
 
@@ -461,6 +489,9 @@
 
         created() {
             this.Req_estate();
+            this.$vuetify.goTo( 0 , {
+                duration : 500 ,
+            })
         } ,
 
         data() {
@@ -489,16 +520,16 @@
                             text: 'خانه',
                             disabled: false,
                             to: '/'
-                        },
+                        } ,
                         {
-                            text: this.Single_estate.assignment.title,
+                            text: this.Single_estate.assignment ? this.Single_estate.assignment.title : '' ,
                             disabled: false,
-                            to: `/properties?assignments=${this.Single_estate.assignment.id}`
-                        },
+                            to: `/properties?assignments=${ this.Single_estate.assignment ? this.Single_estate.assignment.id : ''}`
+                        } ,
                         {
                             text: this.Single_estate.title ||
-                                    this.Single_estate.assignment.title +' '+
-                                    this.Single_estate.estate_type.title +' '+
+                                    (this.Single_estate.assignment ? this.Single_estate.assignment.title +' ' : '') +
+                                    (this.Single_estate.estate_type ? this.Single_estate.estate_type.title +' ' : '') +
                                     `${(this.Single_estate.area).toLocaleString('fa-IR')} متری` ,
                             disabled: true,
                             to: '/'
@@ -603,6 +634,13 @@
                                     landlord_fullname
                                     landlord_phone_number
                                     plaque
+                                    assignmented_at
+                                    label {
+                                        id
+                                        title
+                                        description
+                                        color
+                                    }
                                     photos {
                                         id
                                         file_name
@@ -922,6 +960,26 @@
                 } else if(val > 1000000000) {
                     return `میلیارد تومان`
                 }
+            } ,
+
+            push_link() {
+
+                let query_obj = {};
+
+                if(this.is_exist(this.Single_estate.assignment)) query_obj.assignments = this.Single_estate.assignment.id;
+                if(this.is_exist(this.Single_estate.estate_type)) query_obj.estate_types = this.Single_estate.estate_type.id;
+                if( this.is_exist(this.Single_estate.street) && this.is_exist(this.Single_estate.street.area) ) {
+                    query_obj.areas = [[this.Single_estate.street.area.id]];
+                }
+                if(this.is_exist(this.Single_estate.features)) {
+                    query_obj.features = [];
+                    this.Single_estate.features.map( el => {
+                        query_obj.features.push(el.id);
+                    })
+                }
+
+                this.$router.push({ path : '/properties' , query : query_obj });
+
             }
 
         } ,
@@ -978,6 +1036,11 @@
 </style>
 
 <style scoped>
+
+    .label-estate {
+        height: 120px;
+        width: 120px;
+    }
 
     .title-last-estate {
         color: #484848;

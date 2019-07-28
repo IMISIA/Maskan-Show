@@ -147,11 +147,9 @@
             return {
                 drawer : false ,
                 header_links : [
-                    { title : 'خرید' , link : { path : '/properties' } , icon : 'lnr-home' } ,
-                    { title : 'رهن و اجاره' , link : '/properties' , icon : 'lnr-apartment' } ,
+                    { title : 'املاک' , link : { path : '/properties' } , icon : 'lnr-home' } ,
                     { title : 'مشاوربن املاک' , link : '/team' , icon : 'lnr-users' } ,
                     { title : 'وبلاگ' , link : '/blog' , icon : 'lnr-book' } ,
-                    { title : 'تست صفحه مشاور' , link : '/aaaa' , icon : 'lnr-phone-handset' } ,
                 ]
             }
         } ,
