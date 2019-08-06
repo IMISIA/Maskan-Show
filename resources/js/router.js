@@ -7,8 +7,12 @@ let routes = [
         component : require('./components/Pages/Home.vue').default
     } ,
     {
-        path : '/about' ,
-        component : require('./components/Pages/about.vue').default
+        path : '/password/reset/:token' ,
+        component : require('./components/Pages/Home.vue').default
+    } ,
+    {
+        path : '/login' ,
+        component : require('./components/Pages/Home.vue').default
     } ,
     {
         path : '/Properties' ,
@@ -19,12 +23,16 @@ let routes = [
         component : require('./components/Pages/Estate.vue').default
     } ,
     {
-        path : '/blog/:slug?' ,
+        path : '/articles/:slug?' ,
         component : require('./components/Pages/blog.vue').default
     } ,
     {
-        path : '/single-blog/:slug' ,
+        path : '/article/:slug' ,
         component : require('./components/Pages/single-blog.vue').default
+    } ,
+    {
+        path : '/404-nf' ,
+        component : require('./components/Pages/404.vue').default
     } ,
     {
         path : '*' ,

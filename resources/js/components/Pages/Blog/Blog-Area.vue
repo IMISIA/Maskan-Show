@@ -1,7 +1,5 @@
 <template>
     <div>
-
-        <!--================Blog Area =================-->
         <section class="blog_area">
             <div class="container">
                 <div class="row">
@@ -13,7 +11,7 @@
                             <article class="row blog_item" v-for="(article,index) in articles" :key="index">
 
                                 <!-- Article Informations -->
-                                <div class="col-md-3" v-if="!Res">
+                                <div class="col-md-3" v-if="!Res && is_exist(article.writer)">
                                     <div class="blog_info text-right pt-5">
                                         <ul class="blog_meta list">
                                             <li>
@@ -40,10 +38,10 @@
                                 <div class="col-md-9">
                                     <div class="blog_post">
 
-                                        <router-link :to="`/single-blog/${article.slug}`">
+                                        <router-link :to="`/article/${article.slug}`">
                                             <v-img
                                                 style="margin: -35px -5px 0px;"
-                                                :src=" is_exist(article.image) ? url + article.image.medium : '/img/none.png' "
+                                                :src=" is_exist(article.image) && article.image.medium ? url + article.image.medium : '/img/none.png' "
                                                 :min-height="300"
                                                 :max-height="300"
                                                 max-width="auto"
@@ -54,11 +52,11 @@
                                         
                                         <div class="blog_details">
                                             
-                                            <router-link :to="`/single-blog/${article.slug}`">
+                                            <router-link :to="`/article/${article.slug}`">
                                                 <h4 class="bold" :class="{ 'text-right' : !Res , 'text-center' : Res }"> {{ article.title }} </h4>
                                             </router-link>
                                             
-                                            <div class="w-100" v-if="Res">
+                                            <div class="w-100" v-if="Res && is_exist(article.writer)">
                                                 <div class="blog_info text-right pt-3">
                                                     <ul class="blog_meta list rtl d-flex justify-content-around">
                                                         <li>
@@ -85,7 +83,7 @@
 
                                             <p class="fs-13 pt-2 text-justify rtl p-article"> {{ article.description | truncate(200) }} </p>
 
-                                            <router-link :to="`/single-blog/${article.slug}`">
+                                            <router-link :to="`/article/${article.slug}`">
                                                 <v-btn class="fs-13" outline round :color="web_color"> بیشتر </v-btn>
                                             </router-link>
 
@@ -98,7 +96,7 @@
                             <vs-pagination class="py-5" :color="web_color" :total="total" v-model="page"></vs-pagination>
                         </div>
 
-                        <div v-if="!is_exist(articles)">
+                        <div v-else>
                             <el-card>
                                 <div class="row pa-5">
 
@@ -126,8 +124,6 @@
                 </div>
             </div>
         </section>
-        <!--================Blog Area =================-->
-        
     </div>
 </template>
 
@@ -140,6 +136,12 @@
     export default {
 
         mixins : [mixin,moment] ,
+
+        metaInfo() {
+            return {
+                title : 'وبلاگ ها' ,
+            }
+        } ,
     
         created() {
             this.Req()
@@ -183,8 +185,6 @@
             ]) ,
 
             Req(serach = '') {
-
-                console.log(this.$route.params.category);
 
                 const query = 
                     `{

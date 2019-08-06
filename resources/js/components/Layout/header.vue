@@ -8,42 +8,81 @@
 
                         <!-- Brand and toggle get grouped for better mobile display -->
                         <router-link class="navbar-brand logo_h" to="/" v-if="Res">
-                            <img src="http://maskanshow.com/ProductImage/44.png" style="filter: hue-rotate(175deg);transform: scale(.7);" alt="">
+                            <img class="logo-site res" src="/img/logo.svg" alt="logo">
                         </router-link>
 
                         <div v-if="!Res">
                             <div v-if="is_exist(me)">
+                                <vs-dropdown vs-custom-content vs-trigger-click >
+                                    
+                                    <vs-button class="user-full-name" :color="web_color" icon="expand_more" line-origin="right" type="line">
+                                        {{ me.full_name.trim() || me.username || me.email }}
+                                        <v-avatar class="ml-2" :size="40" :color="web_color">
+                                            <img :src=" me.avatar ? url + me.avatar.small : '/img/user.png' " alt="avatar">
+                                        </v-avatar>
+                                    </vs-button>
 
-                            <vs-dropdown vs-custom-content vs-trigger-click >
-                                <vs-button class="user-full-name" :color="web_color" icon="expand_more" line-origin="right" type="line">
-                                    {{ me.full_name || me.email || me.username }}
-                                </vs-button>
+                                    <vs-dropdown-menu class="loginx">
+                                        <v-list dense shaped>
 
-                                <vs-dropdown-menu class="loginx">
-                                    <v-list dense shaped>
+                                            <v-list-tile href="/panel">
+                                                <v-list-tile-content>
+                                                    <v-list-tile-title class="text-right"> پنل کاربری </v-list-tile-title>
+                                                </v-list-tile-content>
+                                                <v-list-tile-action>
+                                                    <i class="fs-20 mr-2 lnr lnr-user"></i>
+                                                </v-list-tile-action>
+                                            </v-list-tile>
 
-                                        <v-list-tile @click="$router.push('/panel')">
-                                            <v-list-tile-content>
-                                                <v-list-tile-title class="text-right"> پنل کاربری </v-list-tile-title>
-                                            </v-list-tile-content>
-                                            <v-list-tile-action>
-                                                <i class="fs-20 mr-2 lnr lnr-user"></i>
-                                            </v-list-tile-action>
-                                        </v-list-tile>
+                                            <v-list-tile href="/panel/estate/create">
+                                                <v-list-tile-content>
+                                                    <v-list-tile-title class="text-right"> ثبت ملک جدید </v-list-tile-title>
+                                                </v-list-tile-content>
+                                                <v-list-tile-action>
+                                                    <i class="fs-20 mr-2 lnr lnr-file-add"></i>
+                                                </v-list-tile-action>
+                                            </v-list-tile>
 
-                                        <v-list-tile @click="logOut">
-                                            <v-list-tile-content>
-                                                <v-list-tile-title class="text-right"> خروج از حساب </v-list-tile-title>
-                                            </v-list-tile-content>
-                                            <v-list-tile-action>
-                                                <i class="fs-20 mr-2 lnr lnr-exit"></i>
-                                            </v-list-tile-action>
-                                        </v-list-tile>
+                                            <v-list-tile href="/panel/estate/mine">
+                                                <v-list-tile-content>
+                                                    <v-list-tile-title class="text-right"> ملک های من </v-list-tile-title>
+                                                </v-list-tile-content>
+                                                <v-list-tile-action>
+                                                    <i class="fs-20 mr-2 lnr lnr-flag"></i>
+                                                </v-list-tile-action>
+                                            </v-list-tile>
 
-                                    </v-list>
-                                </vs-dropdown-menu>
-                            </vs-dropdown>
+                                            <v-list-tile href="/panel/estate/favorite">
+                                                <v-list-tile-content>
+                                                    <v-list-tile-title class="text-right"> ملک های نشان شده </v-list-tile-title>
+                                                </v-list-tile-content>
+                                                <v-list-tile-action>
+                                                    <i class="fs-20 mr-2 lnr lnr-bookmark"></i>
+                                                </v-list-tile-action>
+                                            </v-list-tile>
 
+                                            <v-list-tile href="/panel/setting/user">
+                                                <v-list-tile-content>
+                                                    <v-list-tile-title class="text-right"> تنظیمات </v-list-tile-title>
+                                                </v-list-tile-content>
+                                                <v-list-tile-action>
+                                                    <i class="fs-20 mr-2 lnr lnr-cog"></i>
+                                                </v-list-tile-action>
+                                            </v-list-tile>
+
+                                            <v-list-tile @click="logOut" class="text-danger">
+                                                <v-list-tile-content>
+                                                    <v-list-tile-title class="text-right "> خروج از حساب </v-list-tile-title>
+                                                </v-list-tile-content>
+                                                <v-list-tile-action>
+                                                    <i class="fs-20 mr-2 lnr lnr-exit"></i>
+                                                </v-list-tile-action>
+                                            </v-list-tile>
+
+                                        </v-list>
+                                    </vs-dropdown-menu>
+
+                                </vs-dropdown>
                             </div>
                             <v-btn v-else class="px-4" :color="web_color" dark round
                                 @click="Set_state({ prop : 'login_modal' , val : true })">
@@ -69,7 +108,7 @@
 
                         <!-- Brand and toggle get grouped for better mobile display -->
                         <router-link class="navbar-brand logo_h" to="/" v-if="!Res">
-                            <img src="http://maskanshow.com/ProductImage/44.png" style="filter: hue-rotate(175deg);transform: scale(.85);" alt="">
+                            <img class="logo-site" src="/img/logo.svg" alt="logo">
                         </router-link>
 
                     </div>
@@ -82,7 +121,16 @@
             <v-navigation-drawer class="drawer-res" :dark="false" v-model="drawer" fixed temporary>
 
                 <div class="p-2 text-center">
-                    <img src="http://maskanshow.com/ProductImage/44.png" style="filter: hue-rotate(175deg);transform: scale(.85);" alt="">
+
+                    <template v-if="is_exist(me)">
+                        <v-avatar class="my-2" :size="60" :color="web_color">
+                            <img :src=" me.avatar ? url + me.avatar.small : '/img/user.png' " alt="avatar">
+                        </v-avatar>
+
+                        <p class="text-center mb-0"> {{ me.full_name.trim() || me.username || me.email }} </p>
+                    </template>
+
+                    <img v-else class="logo-site" src="/img/logo.svg" alt="logo">
                 </div>
 
                 <v-list dense>
@@ -101,10 +149,68 @@
 
                     </v-list-tile>
 
+                    <template v-if="is_exist(me)">
+
+                        <v-list-tile href="/panel">
+                            <v-list-tile-content>
+                                <v-list-tile-title class="text-right"> پنل کاربری </v-list-tile-title>
+                            </v-list-tile-content>
+                            <v-list-tile-action>
+                                <i class="fs-20 mr-2 lnr lnr-user"></i>
+                            </v-list-tile-action>
+                        </v-list-tile>
+
+                        <v-list-tile href="/panel/estate/create">
+                            <v-list-tile-content>
+                                <v-list-tile-title class="text-right"> ثبت ملک جدید </v-list-tile-title>
+                            </v-list-tile-content>
+                            <v-list-tile-action>
+                                <i class="fs-20 mr-2 lnr lnr-file-add"></i>
+                            </v-list-tile-action>
+                        </v-list-tile>
+
+                        <v-list-tile href="/panel/estate/mine">
+                            <v-list-tile-content>
+                                <v-list-tile-title class="text-right"> ملک های من </v-list-tile-title>
+                            </v-list-tile-content>
+                            <v-list-tile-action>
+                                <i class="fs-20 mr-2 lnr lnr-flag"></i>
+                            </v-list-tile-action>
+                        </v-list-tile>
+
+                        <v-list-tile href="/panel/estate/favorite">
+                            <v-list-tile-content>
+                                <v-list-tile-title class="text-right"> ملک های نشان شده </v-list-tile-title>
+                            </v-list-tile-content>
+                            <v-list-tile-action>
+                                <i class="fs-20 mr-2 lnr lnr-bookmark"></i>
+                            </v-list-tile-action>
+                        </v-list-tile>
+
+                        <v-list-tile href="/panel/setting/user">
+                            <v-list-tile-content>
+                                <v-list-tile-title class="text-right"> تنظیمات </v-list-tile-title>
+                            </v-list-tile-content>
+                            <v-list-tile-action>
+                                <i class="fs-20 mr-2 lnr lnr-cog"></i>
+                            </v-list-tile-action>
+                        </v-list-tile>
+                            
+                    </template>
+
                 </v-list>
 
-                <div class="login-drawer">
-                    <v-btn large :color="web_color" dark round @click="open_modal"> ورود / ثبت نام </v-btn>
+                <div class="login-drawer" v-if="is_exist(me)">
+                    <div>
+                        <v-btn color="#E91E63" dark round @click="logOut">
+                            خروج از حساب
+                            <v-icon right dark>exit_to_app</v-icon>
+                        </v-btn>
+                    </div>
+                </div>
+
+                <div v-else class="login-drawer">
+                    <v-btn :color="web_color" dark round @click="open_modal"> ورود / ثبت نام </v-btn>
                 </div>
 
             </v-navigation-drawer>
@@ -114,7 +220,6 @@
 </template>
 
 <script>
-
     import { mapState , mapMutations } from 'vuex';
     import mixin from '../../mixin';
 
@@ -146,19 +251,50 @@
         data() {
             return {
                 drawer : false ,
-                header_links : [
-                    { title : 'املاک' , link : { path : '/properties' } , icon : 'lnr-home' } ,
-                    { title : 'مشاوربن املاک' , link : '/team' , icon : 'lnr-users' } ,
-                    { title : 'وبلاگ' , link : '/blog' , icon : 'lnr-book' } ,
-                ]
             }
         } ,
 
         computed : {
+
             ...mapState([
                 'me' ,
-                'url'
-            ])
+                'assignments' ,
+                'url' ,
+                'req_url'
+            ]) ,
+
+            header_links() {
+
+                let links = [
+                    { title : 'خانه' , link : { path : '/' } , icon : 'lnr-home' } ,
+                ];
+
+                if(this.is_exist(this.assignments)) {
+                    this.assignments.slice(0,4).map( el => {
+                        links.push({
+                            title : el.title ,
+                            link : { path : '/properties' , query : { assignments : el.id } } ,
+                            icon : 'lnr-apartment'
+                        })
+                    })
+                } else {
+                    links.push({
+                        title : 'املاک' ,
+                        link : { path : '/properties' } ,
+                        icon : 'lnr-apartment'
+                    })
+                }
+
+                links.push({
+                    title : 'وبلاگ' ,
+                    link : '/articles' ,
+                    icon : 'lnr-book' ,    
+                })
+
+                return links;
+
+            }
+
         } ,
 
         methods : {
@@ -178,8 +314,29 @@
             } ,
 
             logOut() {
-               window.localStorage.removeItem('JWT');
-               location.reload(); 
+                axios({
+                    method : 'POST' ,
+                    url : this.req_url ,
+                    data : {
+                        query : `
+                            mutation {
+                                logout {
+                                    status
+                                    message
+                                }
+                            }                           
+                        `
+                    }
+                })
+                .then( ({data}) => {
+                    if(data.data.logout.status == 200) {
+                        window.localStorage.removeItem('JWT');
+                        location.reload(); 
+                    } else {
+                        this.notif( 'متاسفانه عملیات با موفقیت انجام نشد' , 'warning' , 'error' );
+                    }
+                })
+                .catch( Err => console.log(Err) )
             }
 
         }
@@ -188,6 +345,21 @@
 </script>
 
 <style>
+
+    .logo-site {
+        height: 80px;
+        width: auto;
+        transform: scale(2) translateY(2px);
+    }
+
+    .logo-site.res {
+        height: 60px !important;
+    }
+
+    .drawer-res .logo-site {
+        height: 60px !important;
+        transform: scale(2.5) translateY(5px);
+    }
     
     .user-full-name {
         border-radius: 4px;

@@ -14,7 +14,7 @@
                             <div class="col-lg-12">
                                 <div class="feature-img">
                                     <v-img
-                                        :src=" is_exist(single_article.image) ? url + single_article.image.large : '/img/none.png' "
+                                        :src=" is_exist(single_article.image) && single_article.image.large ? url + single_article.image.large : '/img/none.png' "
                                         :min-height="350"
                                         :max-height="350"
                                         max-width="auto"
@@ -100,7 +100,6 @@
                                                 outline
                                                 name="input-7-4"
                                                 label="نظر خود را مطرح نمایید"
-                                                value=""
                                                 reverse
                                                 counter
                                                 :maxlength="max_comment"
@@ -110,9 +109,15 @@
                                         </div>
 
                                         <div class="w-100 text-right">
-                                            <button class="btn primary-btn web-bg-grd" @click="new_cm(false)">
+                                            <v-btn
+                                                @click="new_cm(false)"
+                                                class="text-white mr-0"
+                                                :color="web_color"
+                                                :disabled="!new_comment.title || !new_comment.content"
+                                                round
+                                                large>
                                                 {{ Auth ? 'ثبت نظر' : 'ابتدا وارد شوید' }}
-                                            </button>
+                                            </v-btn>
                                         </div>
 
                                     </div>
@@ -140,7 +145,7 @@
                                                                 <span class="text-center fs-12 mr-2"> {{ Qa.created_at | ago }} </span>                                            
                                                             </vs-tooltip>
 
-                                                            <v-btn class="open-answer" outline round :color="web_color_light" small>
+                                                            <v-btn class="open-answer" outline round :color="web_color_dark" small>
                                                                 <span class="fs-12" @click="open_dialpg_cm(Qa.id)"> پاسخ دهید </span>
                                                             </v-btn>       
                                                             
@@ -221,7 +226,6 @@
         <!-- Dialog For Edit User -->
         <v-app>
             <v-layout row justify-center>
-                
                 <v-dialog v-model="dialog_cm" persistent max-width="600px">
                     <v-card class="pa-3 rtl">
 
@@ -232,7 +236,6 @@
                         <v-card-text>
                             <v-form v-model="valid_form_cm">
                                 <v-container grid-list-md>
-
                                     <div class="row rtl">
                                         <div class="col-12 mb-4 review_box text-right" id="contactForm" dir="ltr">
                                             <div>
@@ -259,7 +262,7 @@
 
                                                 <v-textarea
                                                     v-model="Answer.content"
-                                                    class="fs-12"
+                                                    class="fs-12 textarea-rtl"
                                                     label="نظر خود را وارد کنید"
                                                     outline
                                                     name="input-7-4"
@@ -272,7 +275,6 @@
                                             </div>
                                         </div>
                                     </div>
-
                                 </v-container>
                             </v-form>
                         </v-card-text>
@@ -285,7 +287,6 @@
 
                     </v-card>
                 </v-dialog>
-
             </v-layout>
         </v-app>
 
@@ -301,6 +302,12 @@
     export default {
 
         mixins : [mixin,moment] ,
+
+        metaInfo() {
+            return {
+                title : this.single_article.title ,
+            }
+        } ,
 
         created() {
             this.Req();
@@ -343,7 +350,6 @@
                 'single_article' ,
                 'Auth' ,
                 'req_url' ,
-                'token' ,
                 'url'
             ])
         } ,
@@ -470,15 +476,15 @@
 
             open_dialpg_cm(id) {
                 if( !this.Auth ) {
-                    this.$store.state.login_modal = true
-                    return
+                    this.$store.state.login_modal = true;
+                    return;
                 } else if( this.id_cm === id ) {
-                    this.dialog_cm = true
+                    this.dialog_cm = true;
                 } else {
-                    this.Answer.title = ''
-                    this.Answer.content = ''
-                    this.id_cm = id
-                    this.dialog_cm = true
+                    this.Answer.title = '';
+                    this.Answer.content = '';
+                    this.id_cm = id;
+                    this.dialog_cm = true;
                 }
             } ,
 
@@ -486,6 +492,13 @@
                 if( !this.Auth ) {
                     this.$store.state.login_modal = true;
                     return
+                } else if(
+                    !!reply
+                    ? !this.Answer.title && !!this.Answer.content
+                    : !this.new_comment.title && !this.new_comment.content
+                ) {
+                    this.notif( 'فیلد های مورد پر کنید' , 'warning' , 'error' );
+                    return;
                 } else {
 
                     let query = `
@@ -507,22 +520,17 @@
                     
                     axios({
                         method : 'POST' ,
-                        url : this.url_auth ,
+                        url : this.req_url ,
                         data : {
                             query : query
                         } ,
-                        headers : {
-                            'Authorization' : 'Bearer ' + this.token ,
-                            'Access-Control-Allow-Origin' : '*' ,
-                            'Access-Control-Allow-Methods' : 'GET, POST, PATCH, PUT, DELETE, OPTIONS' ,
-                            'Access-Control-Allow-Headers' : 'Origin, Content-Type, X-Auth-Token'                        
-                        }
                     })
                     .then( ({data}) => {
-                        console.log(data);
-                        setTimeout(() => {
-                            this.$store.state.loading = false
-                        }, 500);
+                        if(this.is_exist(data.data.createComment)) {
+                            this.$store.state.loading = false;
+                            this.dialog_cm = false;
+                            this.notif( 'ثبت نظر با موفقیت انجام شد' , 'success' , 'comment' )
+                        }
                     })
                     .catch( Err => {
                         if( Err.response && Err.response.status === 401 ) {
@@ -572,6 +580,10 @@
 </style>
 
 <style>
+
+    .blog_area textarea , .textarea-rtl textarea {
+        text-align: right;
+    }
 
     .margin-minus {
         margin-left: -15px;

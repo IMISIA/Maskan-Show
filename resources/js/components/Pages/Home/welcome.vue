@@ -1,17 +1,21 @@
 <template>
-
-    <section class="welcome_area p_120 col-xs-6">
+    <section class="welcome_area p_100 col-xs-6 bg-white">
         <div class="container">
             <div class="row welcome_inner rtl">
-                <div class="col-lg-6">
+                <div class="col-md-6">
                     <div class="welcome_img float-right">
-                        <img class="img-fluid" src="img/welcome-1.jpg" alt="">
+                        <img class="img-fluid rounded" src="/img/welcome-1.jpg" alt="">
                     </div>
                 </div>
-                <div class="col-lg-6 text-right">
+                <div class="col-md-6 text-right px-xs-4">
                     <div class="welcome_text">
                         <h4> به <span class="web-color"> "مسکن شو" </span> خوش آمدید </h4>
-                        <p> لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است. چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد. </p>
+                        <p v-if="siteSetting.description"> {{ siteSetting.description }} </p>
+                        <p v-else>
+                            «مسکن شو» سامانه هوشمندی است که در حوزه «املاک و مستغلات» و
+                            «مشاغل ساختمانی» و «اشتغال زایی» وخدمات وابسته به آن، فعالیت می‌کند.
+                            مسکن شو به شما امکان فروش، اجاره و خرید ملک مورد نظرتان را می‌دهد.
+                        </p>
                         <div class="row" v-if="false">
                             <div class="col-sm-4">
                                 <div class="wel_item">
@@ -40,20 +44,24 @@
             </div>
         </div>
     </section>
-
 </template>
 
 <script>
+
+    import { mapState } from 'vuex';
+
     export default {
-
-        mounted() {
-
-            // $('.wel_item').tilt({
-            //     maxTilt: 5,
-            //     scale : 1.04
-            // })
-
+        computed : {
+            ...mapState([
+                'siteSetting'
+            ])
         }
-
     }
 </script>
+
+<style>
+    .p_100 {
+        padding-top: 100px;
+        padding-bottom: 100px;
+    }
+</style>

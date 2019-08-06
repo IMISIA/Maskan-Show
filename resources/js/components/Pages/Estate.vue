@@ -2,12 +2,14 @@
     <div>
 
         <!-- label For Assignmented Estate -->
-        <div class="container p-5 text-center"
-            v-if=" is_exist(Single_estate) && (!!Single_estate.assignmented_at || is_exist(Single_estate.label) ) ">
+        <div class="container p-5 text-center d-print-none"
+            v-if=" is_exist(Single_estate) && ( !!Single_estate.assignmented_at || !Single_estate.is_active || is_exist(Single_estate.label) ) ">
             
-            <img class="label-estate" :src=" !!Single_estate.assignmented_at ? '/img/assignmented.svg' : '/img/label.svg' ">
+            <img class="label-estate"
+                :src=" !!Single_estate.assignmented_at ? '/img/assignmented.svg' : '/img/label.svg' ">
 
             <p class="mt-5 text-center" v-if="!!Single_estate.assignmented_at"> متاسفانه این ملک واگذار شده . </p>
+            <p class="mt-5 text-center" v-else-if="!Single_estate.is_active"> این ملک تایید نشده است . </p>
             <p class="mt-5 text-center" v-else> {{ Single_estate.label.description || Single_estate.label.title }} </p>
 
             <p class="text-center">
@@ -27,7 +29,7 @@
         </div>
 
         <!-- Breadcrumb -->
-        <div class="container pt-4" v-if="is_exist(Single_estate)">
+        <div class="container pt-4" v-if="is_exist(Single_estate) && is_exist(assignment)">
             <div class="site-breadcrumb rtl as-shadow border-radius">
                 <v-breadcrumbs :items="Breadcrumb">
                     <template v-slot:divider>
@@ -37,7 +39,7 @@
             </div>
         </div>
 
-        <!-- Owner Info In Pront Mode -->
+        <!-- Owner Info In Print Mode -->
         <div class="container owner-info-print">
             <div class="author-card as-shadow border-radius rtl text-center p-4">
 
@@ -69,7 +71,7 @@
         </div>
 
         <!-- Details -->
-        <section class="page-section" v-if="is_exist(Single_estate)">
+        <section v-if="is_exist(Single_estate) && is_exist(assignment)">
             <div class="container">
                 <div class="row rtl">
 
@@ -79,23 +81,37 @@
 
                             <div class="rtl mb-5 list">
 
-                                <div class="sl-title text-right mb-4">
+                                <div class="row ltr sl-title text-right mb-4">
 
-                                    <h4>
-                                        <span class="web-color"> {{ '#'+ Single_estate.id }} </span>
-                                        {{ Single_estate.title ||
-                                            (Single_estate.assignment ? Single_estate.assignment.title +' ' : '') +
-                                            (Single_estate.estate_type ? Single_estate.estate_type.title +' ' : '') +
-                                            `${(Single_estate.area).toLocaleString('fa-IR')} متری` }}
-                                    </h4>
+                                    <div class="col-md-2 text-left mt-n3 ml-n2" v-if="!Res">
+                                        <qrcode :value="`http://maskanshow.ir/estate/${Single_estate.id}`"
+                                            :options="{ width: 80 }">
+                                        </qrcode>
+                                    </div>
 
-                                    <p>
-                                        <i class="fa fa-map-marker ml-2 fs-20 bold"></i>
-                                        {{  ( Single_estate.street && Single_estate.street.area ? Single_estate.street.area.name +' ، ' : '' ) +
-                                            ( Single_estate.street ? Single_estate.street.name +' ، ' : '' ) +
-                                            Single_estate.address
-                                        }}
-                                    </p>
+                                    <div class="col-md-10 rtl">
+
+                                        <h4>
+                                            <span class="web-color"> {{ '#'+ Single_estate.id }} </span>
+                                            {{ Single_estate.title ||
+                                                (Single_estate.assignment ? Single_estate.assignment.title +' ' : '') +
+                                                (Single_estate.estate_type ? Single_estate.estate_type.title +' ' : '') +
+                                                `${(Single_estate.area).toLocaleString('fa-IR')} متری` }}
+                                        </h4>
+
+                                        <p>
+                                            <i class="fa fa-map-marker-alt ml-2 fs-20 bold web-color"></i>
+                                            {{  ( Single_estate.street && Single_estate.street.area ? Single_estate.street.area.name +' ، ' : '' ) +
+                                                ( Single_estate.street ? 'خیابان ' + Single_estate.street.name +' ، ' : '' ) +
+                                                Single_estate.address
+                                            }}
+                                        </p>
+
+                                        <p class="fs-10 text-danger bold" v-if="!Single_estate.want_cooperation">
+                                            عدم تمایل همکاری با مشاورین املاک
+                                        </p>
+
+                                    </div>
 
                                 </div>
 
@@ -109,12 +125,12 @@
                                             </div>
 
                                             <div class="d-flex" v-else-if="assignment.has_mortgage_price && assignment.has_rental_price">
-                                                <div>
+                                                <div class="text-center">
                                                     {{ Single_estate.mortgage_price | price }}
                                                     <span class="fs-12 normal"> {{ label_price(Single_estate.mortgage_price) }} رهن </span>
                                                 </div>
                                                 <span class="mx-3 line-price"> | </span>
-                                                <div>
+                                                <div class="text-center">
                                                     {{ Single_estate.rental_price | price }}
                                                     <span class="fs-12 normal"> {{ label_price(Single_estate.rental_price) }} اجاره </span>
                                                 </div>
@@ -139,14 +155,13 @@
                                     <template v-if="is_exist(spec.rows)">
                                         <h3 class="sl-sp-title"> {{ spec.title }} </h3>
                                         <div class="row property-details-list rtl text-right">
-                                            <div :class="[ is_exist(item.data) && is_exist(item.data.values) ?
-                                                ( check_chars({ title : item.title , values : item.data.values , prefix : item.prefix , postfix : item.postfix }) ?
-                                                'col-12' : 'col-md-6' ) : 'col-md-6' ]"
-                                                v-for="item in spec.rows" :key="item.id">
-
-                                                <template v-if=" is_exist(item.data) ? ( is_exist(item.data.values) || ( item.is_multiple ? is_exist(item.data.data) : false ) ) : false ">
-                                                    <p>
-                                                        <v-icon> {{ item.icon || 'home'  }} </v-icon>
+                                            <template v-for="item in spec.rows">
+                                                <div class="col-md-4" :key="item.id"
+                                                v-if=" is_exist(item.data)
+                                                ? ( is_exist(item.data.values) || (is_exist(item.data.data) && item.data.data != '[]') )
+                                                : false ">
+                                                    <p class="hvr-icon-back">
+                                                        <i :class="`fa fa-${ item.icon || 'building' } hvr-icon web-color`"></i>
                                                         <span class="text-secondary"> {{ item.title }} : </span>
 
                                                         <span v-if="is_exist(item.data.values)">
@@ -157,13 +172,12 @@
                                                             {{ join_props( Json_parse(item.data.data) , item.prefix , item.postfix ) }}
                                                         </span>
 
-                                                        <span v-else-if="is_exist(item.data.data) && !is_json(item.data.data) ">
+                                                        <span v-else-if="is_exist(item.data.data)">
                                                             {{ item.prefix +' '+ item.data.data +' '+ item.postfix }}
                                                         </span>
                                                     </p>
-                                                </template>
-
-                                            </div>
+                                                </div>
+                                            </template>
                                         </div>
                                     </template>
                                 </div>
@@ -172,12 +186,14 @@
                             <template v-if="is_exist(Single_estate.features)">
                                 <h3 class="sl-sp-title"> امکانات ملک </h3>
                                 <div class="row property-details-list rtl text-right">
-                                    <div class="col-md-6" v-for="item in asc_features" :key="item.id">
-                                        <p>
-                                            <v-icon> {{ item.icon || 'home'  }} </v-icon>
-                                            <span class="text-secondary"> {{ item.title }} </span>
-                                        </p>
-                                    </div>
+                                    <template v-for="item in asc_features">
+                                        <div class="col-md-4" :key="item.id" v-if="item.title">
+                                            <p>
+                                                <i :class="`fa fa-${ item.icon || 'building' } hvr-icon web-color`"></i>
+                                                <span class="text-secondary"> {{ item.title }} </span>
+                                            </p>
+                                        </div>
+                                    </template>
                                 </div>
                             </template>
 
@@ -196,7 +212,7 @@
                                     <div class="property-details-list rtl text-right">
                                         <div class="advantages">
                                             <p v-for="(item,index) in Single_estate.advantages" :key="index">
-                                                <i class="fa fa-check-circle-o"></i>
+                                                <i class="fa fa-check-circle"></i>
                                                 {{ item }}
                                             </p>
                                         </div>
@@ -224,7 +240,7 @@
                                         <div class="advantages row" v-if="is_exist(Single_estate.advantages)">
                                             <p class="col-md-6" v-for="(item,index) in Single_estate.advantages"
                                                 :key="index">
-                                                <i class="fa fa-check-circle-o"></i>
+                                                <i class="fa fa-check-circle"></i>
                                                 {{ item }}
                                             </p>
                                         </div>
@@ -247,13 +263,13 @@
 
                                     <div class="single-list-slider owl-carousel" id="sl-slider">
                                         <div class="sl-item set-bg" v-for="img in images" :key="img.id"
-                                            :data-setbg="url+img.medium">
+                                            :data-setbg="url+img.watermark">
                                         </div>
                                     </div>
 
                                     <div class="owl-carousel sl-thumb-slider mb-5" id="sl-slider-thumb">
                                         <div class="sl-thumb set-bg" v-for="img in images" :key="img.id"
-                                            :data-setbg="url+img.medium">
+                                            :data-setbg="url+img.watermark">
                                         </div>
                                     </div>
                                 </template>
@@ -273,95 +289,146 @@
 
                             <template v-if="is_exist(estate_location)">
                                 <h3 class="sl-sp-title"> محل ملک بر روی نقشه </h3>
-                                <l-map ref="map" class="map" :zoom="zoom" :center="estate_location">
+                                <div>
+                                    <l-map ref="map" class="map w-100" :zoom="zoom" :center="center_map">
 
-                                    <l-tile-layer url="http://{s}.tile.osm.org/{z}/{x}/{y}.png"></l-tile-layer>
+                                        <l-tile-layer url="http://{s}.tile.osm.org/{z}/{x}/{y}.png"></l-tile-layer>
 
-                                    <!-- <l-circle-marker :lat-lng="estate_location" :radius="6" color="#304FFE">
-                                        <l-tooltip>موقعیت مکانی شما</l-tooltip>
-                                    </l-circle-marker> -->
+                                        <l-circle-marker v-if="is_exist(User_Location)" :lat-lng="User_Location" :radius="6" color="#304FFE">
+                                            <l-tooltip>موقعیت مکانی شما</l-tooltip>
+                                        </l-circle-marker>
 
-                                    <l-marker :draggable="false" :lat-lng="estate_location">
-                                        <l-icon :icon-size="[40,50]" :icon-anchor="[20,50]"
-                                            icon-url="/img/location_marker.svg">
-                                        </l-icon>
-                                        <l-tooltip> موقعیت مکانی ملک </l-tooltip>
-                                    </l-marker>
+                                        <l-marker :draggable="false" :lat-lng="estate_location">
+                                            <l-icon :icon-size="[40,50]" :icon-anchor="[20,50]"
+                                                icon-url="/img/location_marker.svg">
+                                            </l-icon>
+                                            <l-tooltip> موقعیت مکانی ملک </l-tooltip>
+                                        </l-marker>
 
-                                </l-map>
+                                        <l-control position="bottomright">
+
+                                            <v-tooltip left>
+                                                <template v-slot:activator="{ on }">
+                                                    <v-btn class="mr-0" color="#304FFE" fab dark small v-on="on" @click="set_user_location = true">
+                                                        <v-icon>location_on</v-icon>
+                                                    </v-btn>
+                                                </template>
+                                                <span> موقعیت مکانی شما </span>
+                                            </v-tooltip>
+
+                                            <v-tooltip top>
+                                                <template v-slot:activator="{ on }">
+                                                    <v-btn :color="web_color" fab dark small v-on="on" @click="set_user_location = false">
+                                                        <v-icon>home</v-icon>
+                                                    </v-btn>
+                                                </template>
+                                                <span> موقعیت مکانی ملک </span>
+                                            </v-tooltip>
+
+                                        </l-control>
+
+                                    </l-map>
+                                </div>
                             </template>
 
                         </div>
                     </div>
 
                     <!-- sidebar -->
-                    <div class="col-lg-4 col-md-7 sidebar ltr">
+                    <div class="col-lg-4 col-md-12 sidebar ltr">
 
                         <div class="author-card as-shadow border-radius rtl text-center p-4">
+                            <div>
 
-                            <div class="text-center mx-4"
-                                :class="[ show_owner_info && has_owner_info ? 'border-bottom pb-2 mb-3' : 'mb-0' ]">
-                                
-                                <template v-if="show_owner_info && has_owner_info">
-                                    اطلاعات املاک
-                                </template>
-
-                                <template v-else>
-                                        
-                                    <v-btn
-                                        v-if=" !( !!Single_estate.assignmented_at || is_exist(Single_estate.label) ) "
-                                        :color="web_color"
-                                        class="white--text"
-                                        round
-                                        @click="show_info">
-                                        <v-icon class="ml-2" dark>visibility</v-icon>
-                                        <span class="fs-13"> نمایش اطلاعات مالک </span>
-                                    </v-btn>
-
-                                    <v-btn slot="reference" color="blue darken-2" fab dark small @click="print(false)">
-                                        <v-icon>print</v-icon>
-                                    </v-btn>
-
-                                </template>
-
-                            </div>
-
-                            <template v-if="show_owner_info && has_owner_info">
-
-                                <div class="row">
-                                    <div class="col-5">
-                                        <p class="text-muted fs-12 text-left mb-1"> نام مالک : </p>   
-                                    </div>
-                                    <div class="col-7">
-                                        <p class="mb-3 text-right"> {{ Single_estate.landlord_fullname }} </p>
-                                    </div>
-                                </div>
-
-                                <div class="row">
-                                    <div class="col-5">
-                                        <p class="text-muted fs-12 text-left mb-1"> شماره تماس : </p>   
-                                    </div>
-                                    <div class="col-7">
-                                        <p class="mb-3 text-right"> {{ Single_estate.landlord_phone_number }} </p>
-                                    </div>
-                                </div>
-
-                                <div class="row">
-                                    <div class="col-10 mx-auto">
-                                        <p class="mb-3 fs-12 text-center">
-                                        {{  ( Single_estate.street && Single_estate.street.area ? Single_estate.street.area.name +' ، ' : '' ) +
-                                            ( Single_estate.street ? Single_estate.street.name +' ، ' : '' ) +
-                                            ( Single_estate.plaque ? Single_estate.address +' ، '+ `پلاک ${Single_estate.plaque}` : Single_estate.address )
+                                <div class="text-center mx-1"
+                                    :class="[ (show_owner_info && has_owner_info)
+                                        || (show_office_info && is_exist(Single_estate.office))
+                                        ? 'border-bottom pb-2 mb-3'
+                                        : 'mb-0'
+                                    ]">
+                                    <template v-if=" (show_owner_info && has_owner_info) || (show_office_info && is_exist(Single_estate.office)) ">
+                                        {{ 
+                                            Single_estate.registrar_type && Single_estate.registrar_type.id == 2 && is_exist(Single_estate.office)
+                                            ? 'اطلاعات مشاور'
+                                            : 'اطلاعات مالک'
                                         }}
-                                        </p>
-                                    </div>
+                                    </template>
                                 </div>
+
+                                <transition @enter="enter">
+
+                                    <div class="estate-detail" v-if="show_owner_info && has_owner_info">
+
+                                        <div class="row" v-if="Single_estate.landlord_fullname">
+                                            <div class="col-5">
+                                                <p class="text-muted fs-12 text-left mb-1"> نام مالک : </p>   
+                                            </div>
+                                            <div class="col-7">
+                                                <p class="mb-3 text-right"> {{ Single_estate.landlord_fullname }} </p>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-5">
+                                                <p class="text-muted fs-12 text-left mb-1"> شماره تماس : </p>   
+                                            </div>
+                                            <div class="col-7">
+                                                <p class="mb-3 text-right"> {{ Single_estate.landlord_phone_number }} </p>
+                                            </div>
+                                        </div>
+
+                                        <div class="row" v-if="is_exist(Single_estate.street)">
+                                            <div class="col-10 mx-auto">
+                                                <p class="mb-3 fs-12 text-center">
+                                                <i class="fa fa-map-marker-alt ml-2 fs-20 bold web-color"></i>
+                                                {{  ( Single_estate.street && Single_estate.street.area ? Single_estate.street.area.name +' ، ' : '' ) +
+                                                    ( Single_estate.street ? Single_estate.street.name +' ، ' : '' ) +
+                                                    ( Single_estate.plaque ? Single_estate.address +' ، '+ `پلاک ${Single_estate.plaque}` : Single_estate.address )
+                                                }}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+                                    <div class="estate-detail" v-else-if="show_office_info && !has_owner_info && is_exist(Single_estate.office)">
+
+                                        <div class="row" v-if="Single_estate.office.name">
+                                            <div class="col-5">
+                                                <p class="text-muted fs-12 text-left mb-1"> نام املاک : </p>   
+                                            </div>
+                                            <div class="col-7">
+                                                <p class="mb-3 text-right"> {{ Single_estate.office.name }} </p>
+                                            </div>
+                                        </div>
+
+                                        <div class="row" v-if="Single_estate.office.phone_number">
+                                            <div class="col-5">
+                                                <p class="text-muted fs-12 text-left mb-1"> شماره تماس : </p>   
+                                            </div>
+                                            <div class="col-7">
+                                                <p class="mb-3 text-right"> {{ Single_estate.office.phone_number }} </p>
+                                            </div>
+                                        </div>
+
+                                        <div class="row" v-if="Single_estate.office.address">
+                                            <div class="col-10 mx-auto">
+                                                <p class="mb-3 fs-12 text-center">
+                                                    <i class="fa fa-map-marker-alt ml-2 fs-20 bold web-color"></i>
+                                                    {{ Single_estate.office.address }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        
+                                    </div>
+
+                                </transition>
 
                                 <div>
 
                                     <v-btn
-                                        v-if="Auth || true"
-                                        :color="web_color"
+                                        v-if=" (show_owner_info && has_owner_info) || (show_office_info && is_exist(Single_estate.office)) "
+                                        color="#E91E63"
                                         class="text-white"
                                         round
                                         :disabled="assignment_estate_loading"
@@ -371,7 +438,33 @@
                                         <span class="fs-13"> اعلام واگذاری </span>
                                     </v-btn>
 
+                                    <v-btn
+                                        v-else
+                                        :color="web_color"
+                                        class="white--text"
+                                        round
+                                        @click="show_info">
+                                        <v-icon class="ml-2" dark>person</v-icon>
+                                        <span class="fs-13">
+                                            {{ 
+                                                Single_estate.registrar_type && Single_estate.registrar_type.id == 2 && is_exist(Single_estate.office)
+                                                ? 'اطلاعات مشاور'
+                                                : 'اطلاعات مالک'
+                                            }}
+                                        </span>
+                                    </v-btn>
+
+                                    <v-tooltip top>
+                                        <template v-slot:activator="{ on }">
+                                            <v-btn color="#E91E63" fab dark small :outline="!is_fav" v-on="on" @click="add_fav">
+                                                <v-icon>bookmark</v-icon>
+                                            </v-btn>
+                                        </template>
+                                        <span> {{ is_fav ? 'نشان شده' : 'نشان کردن' }} </span>
+                                    </v-tooltip>
+
                                     <el-popover
+                                        v-if=" (show_owner_info && has_owner_info) || (show_office_info && is_exist(Single_estate.office)) "
                                         placement="top"
                                         width="190"
                                         v-model="confirm_print">
@@ -385,10 +478,36 @@
                                         </v-btn>
                                     </el-popover>
 
-                                </div>
-                                
-                            </template>
+                                    <v-tooltip top v-else>
+                                        <template v-slot:activator="{ on }">
+                                            <v-btn color="blue darken-2" fab dark small v-on="on" @click="print(false)">
+                                                <v-icon>print</v-icon>
+                                            </v-btn>
+                                        </template>
+                                        <span>پرینت</span>
+                                    </v-tooltip>
 
+                                </div>
+
+                                <div class="mt-3">
+                                    <v-btn
+                                        v-if="has_edit_permission"
+                                        color="#204065"
+                                        class="text-white"
+                                        round
+                                        :href="`/panel/estate/${Single_estate.id}/edit`">
+                                        <v-icon class="ml-2" dark>edit</v-icon>
+                                        <span class="fs-13"> ویرایش ملک </span>
+                                    </v-btn>
+                                </div>
+
+                                <div class="mt-4" v-if="Res">
+                                    <qrcode :value="`http://maskanshow.ir/estate/${Single_estate.id}`"
+                                        :options="{ width: 120 }">
+                                    </qrcode>
+                                </div>
+
+                            </div>
                         </div>
 
                         <template v-if=" is_exist(Single_estate.street) &&
@@ -415,7 +534,7 @@
 
                                 <div class="col-12 author-contact border-top mt-4">
                                     <p class="text-center"><i class="fa fa-phone"></i> {{ office.phone_number }} </p>
-                                    <p class="text-center"><i class="fa fa-map-marker"></i> {{ office.address }} </p>
+                                    <p class="text-center"><i class="fa fa-map-marker-alt"></i> {{ office.address }} </p>
                                 </div>
 
                             </div>
@@ -428,7 +547,7 @@
         </section>
 
         <!-- Not Found Estate -->
-        <section class="pt-5" v-if="!is_exist(Single_estate)">
+        <section class="pt-5" :class="{ 'opacity-0' : show_page }" v-else>
             <div>
 
                 <section class="error-container">
@@ -472,10 +591,20 @@
         LTooltip
     } from 'vue2-leaflet';
     import 'leaflet/dist/leaflet.css';
+    import qrcode from '@chenfengyuan/vue-qrcode';
 
     export default {
 
         mixins: [mixin] ,
+
+        metaInfo() {
+            return {
+                title : this.Single_estate.title ||
+                        (this.Single_estate.assignment ? this.Single_estate.assignment.title +' ' : '') +
+                        (this.Single_estate.estate_type ? this.Single_estate.estate_type.title +' ' : '') +
+                        `${this.Single_estate.area} متری` ,
+            }
+        } ,
 
         components: {
             LMap ,
@@ -484,7 +613,8 @@
             LCircleMarker ,
             LControl ,
             LIcon ,
-            LTooltip
+            LTooltip ,
+            qrcode
         } ,
 
         created() {
@@ -496,10 +626,14 @@
 
         data() {
             return {
+                show_page : true ,
+
                 zoom: 16,
                 confirm_print : false ,
                 assignment_estate_loading : false ,
-                show_owner_info : false
+                show_owner_info : false ,
+                show_office_info : false ,
+                set_user_location : false ,
             }
         } ,
 
@@ -511,7 +645,8 @@
                 'Auth' ,
                 'url' ,
                 'req_url' ,
-                'me'
+                'me' ,
+                'User_Location'
             ]) ,
 
             Breadcrumb() {
@@ -560,7 +695,17 @@
 
             estate_location() {
                 if ( this.is_exist(this.Single_estate) && this.is_exist(this.Single_estate.coordinates) ) {
-                    return [this.Single_estate.coordinates.lat, this.Single_estate.coordinates.lng]
+                    return [this.Single_estate.coordinates.lat, this.Single_estate.coordinates.lng];
+                } else {
+                    return null;
+                }           
+            } ,
+
+            center_map() {
+                if ( !this.set_user_location && this.is_exist(this.Single_estate) && this.is_exist(this.Single_estate.coordinates) ) {
+                    return [this.Single_estate.coordinates.lat, this.Single_estate.coordinates.lng];
+                } else if( this.set_user_location && this.is_exist(this.User_Location) ) {
+                    return this.User_Location;
                 } else {
                     return null;
                 }
@@ -575,37 +720,48 @@
             } ,
 
             has_owner_info() {
-                return  !!this.Single_estate.landlord_fullname &&
-                        !!this.Single_estate.landlord_phone_number &&
-                        !!this.Single_estate.plaque
-            } , 
+                return !!this.Single_estate.landlord_phone_number;
+            } ,
 
             asc_features() {
                 return _.orderBy( this.Single_estate.features , 'title' , 'asc' );
+            } ,
+
+            is_fav() {
+                if(this.is_exist(this.Single_estate)) {
+                    return this.Single_estate.is_favorite;
+                } else {
+                    return false;
+                }
+            } ,
+
+            has_edit_permission() {
+                if(this.Single_estate.is_mine) {
+                    return true;
+                } else if(
+                    this.is_exist(this.me.allPermissions)
+                    && this.me.allPermissions.find( el => el.name == 'update-estate' )
+                ) {
+                    return true
+                } else {
+                    return false;
+                }
             }
 
         } ,
 
         filters: {
-
             price(val) {
-                if(val < 1000000) {
+                if(!val) {
+                    return 'توافقی.'    
+                } else if(val < 1000000) {
                     return (val/1000).toLocaleString('fa-IR')
                 } else if(val < 1000000000) {
                     return (val/1000000).toLocaleString('fa-IR')
                 } else if(val > 1000000000) {
                     return (val/1000000000).toLocaleString('fa-IR')
                 }
-            } ,
-
-            filter_price(val) {
-                if (val < 1000000) {
-                    return (Math.ceil(val / 1000)).toLocaleString('fa-IR') + ' ت';
-                } else {
-                    return (Math.ceil(val / 1000000)).toLocaleString('fa-IR') + ' م';
-                }
             }
-
         } ,
 
         methods: {
@@ -626,15 +782,19 @@
                     data : {
                         query: `
                             {
-                                estate( id : "${this.$route.params.id}" ) {
+                                estate( id : "${this.$route.params.id}" , only_show_valid_spec : true ) {
                                     id
                                     code
                                     title
+                                    is_active
+                                    is_mine
                                     description
                                     landlord_fullname
                                     landlord_phone_number
                                     plaque
                                     assignmented_at
+                                    is_favorite
+                                    want_cooperation
                                     label {
                                         id
                                         title
@@ -644,12 +804,21 @@
                                     photos {
                                         id
                                         file_name
-                                        medium
+                                        #medium
+                                        watermark
                                     }
                                     aparat_video
                                     registrar_type {
                                         id
                                         display_name
+                                        description
+                                    }
+                                    office {
+                                        id
+                                        username
+                                        name
+                                        phone_number
+                                        address
                                         description
                                     }
                                     address
@@ -732,7 +901,6 @@
                     }
                 })
                 .then( ({data}) => {
-                    console.log(data);
                     if( !!data.errors ) {
                         data.errors.forEach( Err => console.error(Err.message) )
                     } else {
@@ -742,6 +910,7 @@
                 .then( () => {
                     this.Jquery();
                     setTimeout(() => {
+                        this.show_page = false;
                         this.Set_state({ prop : 'loading' , val : false })
                     }, 500);
                 })
@@ -756,15 +925,69 @@
 
             } ,
 
+            add_fav() {
+                if(!this.Auth) {
+
+                    this.notif( 'کاربر گرامی ، برای ثبت علاقه مندی‌ها ابتدا باید وارد سایت شوید' , 'warning' , 'error' )
+                    return;
+
+                } else {
+
+                    let query = `
+                        mutation {
+                            ${ !this.is_fav ? 'addFavorite' : 'removeFavorite' }( estate : "${this.Single_estate.id}" ) {
+                                status
+                                message
+                            }
+                        }
+                    `
+        
+                    axios({
+                        method : 'POST' ,
+                        url : this.req_url ,
+                        data : {
+                            query : query
+                        }
+                    })
+                    .then( ({data}) => {
+                        if( !!data.errors ) {
+                            data.errors.forEach( Err => console.error(Err.message) )
+                        } else {
+                            if( !this.is_fav && data.data.addFavorite.status == 200 ) {
+
+                                this.notif( data.data.addFavorite.message , 'danger' , 'favorite' );
+                                this.$store.state.Single_estate.is_favorite = true;
+
+                            } else if( this.is_fav && data.data.removeFavorite.status == 200 ) {
+
+                                this.notif( data.data.removeFavorite.message , 'warning' , 'close' );
+                                this.$store.state.Single_estate.is_favorite = false;
+
+                            } else {
+                                this.notif( !this.is_fav ? data.data.addFavorite.message : data.data.removeFavorite.message , 'warning' , 'error' );
+                            }
+                        }
+                    })
+                    .catch( Err => console.log( Err ) )
+
+                }
+            } ,
+
             show_info() {
                 if( !!this.has_owner_info ) {
                     this.show_owner_info = true;
-                } else if( this.Single_estate.registrar_type && this.Single_estate.registrar_type.id == 2 ) {
-                    this.show_owner_info = true;
-                } else if(!this.Auth) {
-                    this.notif( 'کاربر گرامی برای اعلام واگذازی ابتدا باید وارد سایت شوید' , 'warning' , 'error' );
                     return;
-                } else if( this.Auth && !!this.has_owner_info ) {
+                } else if(
+                    this.Single_estate.registrar_type
+                    && this.Single_estate.registrar_type.id == 2
+                    && this.is_exist(this.Single_estate.office) 
+                ) {
+                    this.show_office_info = true
+                    return;
+                } else if(!this.Auth) {
+                    this.notif( 'کاربر گرامی برای مشاهده اطلاعات مالک ابتدا باید وارد سایت شوید' , 'warning' , 'error' );
+                    return;
+                } else if( this.Auth && !this.has_owner_info ) {
                     if( this.me && this.me.visited_estate_count == 0 ) {
                         this.notif( 'کاربر گرامی نسبت به خرید پنل اقدام نمایید' , 'warning' , 'error' );
                     } else {
@@ -866,6 +1089,10 @@
                     $(document).ready(function() {
                         $('.owner-info-print').addClass('has-owner')
                     })
+                } else {
+                    $(document).ready(function() {
+                        $('.owner-info-print').removeClass('has-owner')
+                    })
                 }
 
                 setTimeout(() => {
@@ -897,7 +1124,6 @@
                         }
                     })
                     .then( ({data}) => {
-                        console.log(data);
                         if( data.data.assignmentEstate.status == 200 ) {
                             this.notif( data.data.assignmentEstate.message , 'success' , 'check' )
                         } else {
@@ -916,14 +1142,6 @@
                     })
 
                 }
-            } ,
-
-            check_chars( obj ) {
-                let sum = obj.title.length;
-                obj.values.map( el => {
-                    sum +=  ( obj.prefix +' '+ el.value +' '+ obj.postfix ).length
-                })
-                return sum > 35
             } ,
 
             join_props( values , prefix , postfix ) {
@@ -980,15 +1198,39 @@
 
                 this.$router.push({ path : '/properties' , query : query_obj });
 
-            }
+            } ,
 
-        } ,
+            enter(el, done) {
+                anime({
+                    targets: el,
+                    height: [0 , el.clientHeight],
+                    opacity: [0 , 1],
+                    duration: 1200,
+                    complete() {
+                        done()
+                    }
+                })
+            }
+        }
 
     }
 
 </script>
 
 <style>
+
+    .opacity-0 {
+        opacity: 0 !important;
+    }
+
+    .leaflet-control .v-btn--floating.v-btn--small {
+        height: 35px !important;
+        width: 35px !important;
+    }
+
+    .leaflet-control-attribution.leaflet-control {
+        display: none;
+    }
 
     .author-card .col-7 p {
         color: #222222;
@@ -1021,6 +1263,15 @@
     }
 
     @media only print {
+
+        .as-shadow {
+            box-shadow: unset !important;
+        }
+
+        .map > * {
+            width: 100%;
+        }
+
         footer,
         .sidebar,
         .media-estate,
@@ -1031,6 +1282,28 @@
         .owner-info-print.has-owner {
             display: block;
         }
+
+        .parent_header_area + div {
+            margin-top: 180px;
+        }
+
+        nav div.container.box_1620 a {
+            width: 100%;
+            text-align: center;
+        }
+
+        nav div.container.box_1620 a img {
+            height: 150px;
+        }
+
+        nav div.container.box_1620 button {
+            display: none;
+        }
+
+        nav div.container.box_1620 #navbarSupportedContent ul , .leaflet-control {
+            display: none;
+        }
+
     }
 
 </style>

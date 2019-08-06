@@ -3,10 +3,10 @@
 
         <!--================Blog Categorie Area =================-->
         <section class="blog_categorie_area">
-            <div class="container">
+            <div class="container" v-if="categories.length">
                 <div class="row">
                     <div class="col-lg-4" v-for="ctg in categories.slice(0,3)" :key="ctg.id">
-                        <router-link :to=" '/Blog/' + ctg.id ">
+                        <router-link :to=" '/articles/' + ctg.id ">
                             <div class="categories_post">
                                 <img :src=" $store.state.url + ctg.logo.medium " alt="post">
                                 <div class="categories_details">
@@ -31,25 +31,17 @@
 <script>
     export default {
      
-        mounted() {
-
-            $(document).ready(function () {
-
-                setTimeout(() => {
-                    $('.categories_post').tilt({
-                        maxTilt: 5 ,
-                    })
-                }, 2000);
-
-
-            });
-
-        } ,
-
         computed : {
             categories() {
+                if(this.$store.state.subjects.filter( el => !!el.logo ).length != 0) {
+                    $(document).ready(function () {
+                        $('.categories_post').tilt({
+                            maxTilt: 5 ,
+                        })
+                    });
+                }
                 return this.$store.state.subjects.filter( el => !!el.logo )
-            }
+            } ,
         }
 
     }

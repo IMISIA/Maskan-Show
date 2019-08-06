@@ -10,9 +10,13 @@ const store = new Vuex.Store({
         siteSetting : {} ,
 
         dialog_filters : false ,
+        dialog_sort : false ,
 
         register_modal : false ,
         login_modal : false ,
+        reset_pass_modal : false ,
+        change_pass_modal : false ,
+        access_modal : false ,
 
         Auth : !!window.localStorage.getItem('JWT') ,
         url : 'http://192.168.1.219' ,
@@ -20,6 +24,8 @@ const store = new Vuex.Store({
         
         // User Information
         me : {} ,
+
+        User_Location : [] ,
 
         office : {} ,
 
@@ -139,7 +145,9 @@ const store = new Vuex.Store({
         // Query - Props - States
         Req_data( state , obj ) {
 
-            state.loading = true
+            if(obj.loading !== false) {
+                state.loading = true;
+            }
 
             axios({
                 method : 'POST' ,
@@ -149,23 +157,33 @@ const store = new Vuex.Store({
                 }
             })
             .then( ({data}) => {
-                console.log(data);
                 if( !!data.errors ) {
                     console.log(data.errors);
                     data.errors.forEach( Err => console.error(Err.message) )
                 } else {
+
+                    if( obj.changeDataResolver && typeof obj.changeDataResolver === "function" ) {
+                        data = obj.changeDataResolver(data)
+                    }
+
+                    if( obj.resolver && typeof obj.resolver === "function" ) {
+                        obj.resolver(data)
+                    }
+
                     obj.props.forEach( ( el , index ) => {
+
                         if( obj.is_object ) {
                             state[obj.states[index]] = Object.assign( state[obj.states[index]] , (data.data[el].data ? data.data[el].data : data.data[el]) );
                         } else {
                             state[obj.states[index]] = data.data[el].data ? data.data[el].data : data.data[el]
                         }
-    
+
                         if( data.data[el].total ) {
                             state.pagination.total = data.data[el].total
                         }
     
                     });
+
                 }
             })
             .then( () => {
@@ -173,6 +191,7 @@ const store = new Vuex.Store({
                     state.loading = false
                 }, 500);
             })
+            .then( obj.afterResolver && typeof obj.afterResolver === "function" ? obj.afterResolver() : () => null )
             .catch( Err => {
                 if( Err.response && Err.response.status === 401 ) {
                     window.localStorage.removeItem('JWT');
@@ -182,7 +201,7 @@ const store = new Vuex.Store({
                 }
             })
 
-        } ,
+        }
 
     }
 

@@ -17,7 +17,7 @@ export default {
     data() {
         return {
             
-            web_color : '#29B6F6' ,
+            web_color : '#0ECFC6' ,
 
             window: {
                 width: 0
@@ -29,7 +29,7 @@ export default {
     computed : {
 
         Res() {
-            return this.window.width < 770 ? true : false;
+            return this.window.width < 1000 ? true : false;
         } ,
 
         isLight() {

@@ -16,25 +16,32 @@
         <as-footer></as-footer>
 
         <vs-popup class="login-modal" title="ورود" :active.sync="$store.state.login_modal">
-                <v-form v-model="valid_login">
+                <v-form v-model="valid.login">
                     <div class="register rtl p-4 pb-2">
 
                         <div>
-                            <h6 class="rtl bold required"> ایمیل یا نام کاربری </h6>
+                            <h6 class="rtl bold required"> نام کاربری </h6>
                             <v-text-field
+                                @keyup.native.enter="user_login(false)"
                                 class="small-text-field"
                                 v-model="login.email"
-                                label="ایمیل یا نام کاربری خود را  وارد کنید"
+                                label="نام کاربری خود را وارد کنید"
                                 reverse
                                 outline
                                 single-line
-                                :rules="[rules.required]"
+                                :rules="[rules.required,rules.username_regex]"
                             ></v-text-field>
                         </div>
 
                         <div>
-                            <h6 class="rtl bold required"> رمز عبور </h6>
+                            <h6 class="rtl bold required">
+                                رمز عبور
+                                <span class="forget-pass-text" @click="change_modal( 'login_modal' , 'access_modal' )">
+                                    ورود با کد دسترسی
+                                </span>
+                            </h6>
                             <v-text-field
+                                @keyup.native.enter="user_login(false)"
                                 class="small-text-field"
                                 v-model="login.password.value"
                                 label="رمز عبور را وارد کنید"
@@ -50,33 +57,178 @@
 
                         <v-btn class="text-white"
                             :color="web_color"
-                            :disabled=" !valid_login || login.loading "
+                            :disabled=" !valid.login || login.loading "
                             :loading="login.loading"
                             block
                             round
-                            @click="user_login">
+                            @click="user_login(false)">
                             ورود
                         </v-btn>
 
                         <div class="text-center mt-3">
                             <span class="fs-12"> کاربر جدید هستید؟ </span>
                             <el-link class="fs-12 mr-1" type="primary"
-                                @click="change_modal">
+                                @click="change_modal( 'login_modal' , 'register_modal' )">
                                 ثبت نام
                             </el-link>
                         </div>
+
+                        <p class="text-center fs-10 mt-2 mb-0">
+                            رمز عبور را فراموش کرده اید؟
+                            <a class="tel-text" :href=" 'tel:'+$store.state.siteSetting.phone ">
+                                با پشتیبانی تماس بگیرید
+                            </a>
+                        </p>
 
                     </div>
                 </v-form>
         </vs-popup>
 
-        <vs-popup title="ثبت نام" :active.sync="$store.state.register_modal">
+        <vs-popup class="login-modal" title="ورود با کد دسترسی" :active.sync="$store.state.access_modal">
+                <v-form v-model="valid.access_code">
+                    <div class="register rtl p-4 pb-2">
+
+                        <p class="text-center">
+                            برای دریافت کد دسترسی لطفا با پشتیبانی تماس بگیرید
+                        </p>
+
+                        <div>
+                            <h6 class="rtl bold required"> نام کاربری </h6>
+                            <v-text-field
+                                @keyup.native.enter="user_login(true)"
+                                class="small-text-field"
+                                v-model="login.email"
+                                label="نام کاربری خود را وارد کنید"
+                                reverse
+                                outline
+                                single-line
+                                :rules="[rules.required,rules.username_regex]"
+                            ></v-text-field>
+                        </div>
+
+                        <div>
+                            <h6 class="rtl bold required">
+                                کد دسترسی
+                            </h6>
+                            <v-text-field
+                                @keyup.native.enter="user_login(true)"
+                                class="small-text-field"
+                                v-model="login.access_code"
+                                label="کد دسترسی را وارد کنید"
+                                reverse
+                                outline
+                                single-line
+                                :rules="[rules.required]"
+                            ></v-text-field>
+                        </div>
+
+                        <v-btn class="text-white"
+                            :color="web_color"
+                            :disabled=" !valid.access_code || login.loading "
+                            :loading="login.loading"
+                            block
+                            round
+                            @click="user_login(true)">
+                            ورود
+                        </v-btn>
+
+                    </div>
+                </v-form>
+        </vs-popup>
+
+        <vs-popup class="login-modal" title="بازیابی رمز عبور" :active.sync="$store.state.reset_pass_modal && false">
+                <v-form v-model="valid.reset">
+                    <div class="register rtl p-4 pb-2">
+
+                        <p>
+                            در صورتی که رمز عبورتان را فراموش کرده اید با داشتن ایمیلی که هنگام 
+                            ثبت نام وارد کرده اید میتوانید رمزتان را بازیابی کنید.
+                        </p>
+
+                        <div>
+                            <h6 class="rtl bold required"> پست الکترونیک </h6>
+                            <v-text-field
+                                class="small-text-field"
+                                v-model="reset_pass.email"
+                                label="ایمیل خود را وارد کنید"
+                                reverse
+                                outline
+                                single-line
+                                :rules="[rules.required,rules.email]"
+                            ></v-text-field>
+                        </div>
+
+                        <v-btn class="text-white"
+                            :color="web_color"
+                            :disabled=" !valid.reset || reset_pass.loading "
+                            :loading="reset_pass.loading"
+                            block
+                            round
+                            @click="reset_password">
+                            <v-icon class="ml-2">vpn_key</v-icon>
+                            بازیابی کلمه عبور
+                        </v-btn>
+
+                    </div>
+                </v-form>
+        </vs-popup>
+
+        <vs-popup class="login-modal" title="تغییر رمز عبور" :active.sync="$store.state.change_pass_modal && false">
+                <v-form v-model="valid.change">
+                    <div class="register rtl p-4 pb-2">
+
+                        <div>
+                            <h6 class="rtl bold required"> رمز عبور </h6>
+                            <v-text-field
+                                class="small-text-field"
+                                v-model="change_pass.password.value"
+                                label="رمز عبور را وارد کنید"
+                                reverse
+                                outline
+                                single-line
+                                :prepend-inner-icon="change_pass.password.show ? 'visibility' : 'visibility_off'"
+                                :type="change_pass.password.show ? 'text' : 'password'"
+                                @click:prepend-inner="change_pass.password.show = !change_pass.password.show"
+                                :rules="[rules.required]"
+                            ></v-text-field>
+                        </div>
+
+                        <div>
+                            <h6 class="rtl bold required"> تکرار رمز عبور </h6>
+                            <v-text-field
+                                class="small-text-field"
+                                v-model="change_pass.confirm_password.value"
+                                label="رمز عبور خود را تکرار کنید"
+                                reverse
+                                outline
+                                single-line
+                                type="password"
+                                :rules="[rules.required,match_reset_pass]"
+                            ></v-text-field>
+                        </div>
+
+                        <v-btn class="text-white"
+                            :color="web_color"
+                            :disabled=" !valid.change || change_pass.loading "
+                            :loading="change_pass.loading"
+                            block
+                            round
+                            @click="change_password">
+                            <v-icon class="ml-2">vpn_key</v-icon>
+                            تغییر کلمه عبور
+                        </v-btn>
+
+                    </div>
+                </v-form>
+        </vs-popup>
+
+        <vs-popup class="register-modal" title="ثبت نام" :active.sync="$store.state.register_modal">
             <v-stepper v-model="stepper">
 
                 <v-stepper-header class="rtl">
                     
-                    <v-stepper-step :complete="valid_steps.step_1" step="1"
-                        :color=" valid_steps.step_1 ? '#00E676' : web_color "> مشخصات فردی </v-stepper-step>
+                    <v-stepper-step :complete="valid.steps.step_1" step="1"
+                        :color=" valid.steps.step_1 ? '#00E676' : web_color "> مشخصات فردی </v-stepper-step>
 
                     <transition name="fade" mode="out-in">
                         <v-divider v-if="is_consultant"></v-divider>
@@ -84,8 +236,8 @@
 
                     <transition name="fade" mode="out-in">
                         <template v-if="is_consultant">
-                            <v-stepper-step :complete="valid_steps.step_2" step="2"
-                                :color=" valid_steps.step_2 ? '#00E676' : web_color "> مشخصات املاک </v-stepper-step>
+                            <v-stepper-step :complete="valid.steps.step_2" step="2"
+                                :color=" valid.steps.step_2 ? '#00E676' : web_color "> مشخصات املاک </v-stepper-step>
                         </template>
                     </transition>
 
@@ -97,7 +249,7 @@
 
                         <v-checkbox class="checkbox" :color="web_color" v-model="is_consultant" label="مشاور املاک هستم"></v-checkbox>
 
-                        <v-form v-model="valid_steps.step_1">
+                        <v-form v-model="valid.steps.step_1">
 
                             <div class="row rtl register">
 
@@ -106,25 +258,25 @@
                                     <v-text-field
                                         class="small-text-field"
                                         v-model="register.username"
-                                        label=" برای مثال imisia"
+                                        label=" برای مثال heydari"
                                         reverse
                                         outline
                                         single-line
-                                        :rules="[rules.required]"
+                                        :rules="[rules.required,rules.username,rules.username_regex]"
                                     ></v-text-field>
                                 </div>
 
                                 <div class="col-sm-6">
-                                    <h6 class="rtl bold required"> تلفن تماس </h6>
+                                    <h6 class="rtl bold required"> شماره همراه </h6>
                                     <v-text-field
                                         class="small-text-field"
                                         v-model="register.phone_number"
-                                        label="شماره تماس خود را وارد کنید"
+                                        label="شماره همراه خود را وارد کنید"
                                         reverse
                                         outline
                                         single-line
                                         type="number"
-                                        :rules="[rules.required]"
+                                        :rules="[rules.required,rules.phone_number]"
                                     ></v-text-field>
                                 </div>
 
@@ -154,8 +306,8 @@
                                     ></v-text-field>
                                 </div>
 
-                                <div class="col-sm-12">
-                                    <h6 class="rtl bold required"> پست الکترونیک </h6>
+                                <div class="col-sm-12" v-if="false">
+                                    <h6 class="rtl bold"> پست الکترونیک </h6>
                                     <v-text-field
                                         class="small-text-field"
                                         v-model="register.email"
@@ -164,7 +316,7 @@
                                         outline
                                         single-line
                                         type="email"
-                                        :rules="[rules.required,rules.email]"
+                                        :rules="[rules.email]"
                                     ></v-text-field>
                                 </div>
 
@@ -180,7 +332,7 @@
                                         :prepend-inner-icon="register.password.show ? 'visibility' : 'visibility_off'"
                                         :type="register.password.show ? 'text' : 'password'"
                                         @click:prepend-inner="register.password.show = !register.password.show"
-                                        :rules="[rules.required]"
+                                        :rules="[rules.required,rules.password]"
                                     ></v-text-field>
                                 </div>
 
@@ -202,9 +354,9 @@
 
                             <transition name="fade" mode="out-in">
                                 <v-btn class="text-white" color="#00E676" v-if="!is_consultant" :loading="register.loading"
-                                    :disabled="!valid_steps.step_1 || register.loading" @click="user_register"> ثبت نام </v-btn>
-                                <v-btn color="info" v-if="is_consultant"
-                                    :disabled="!valid_steps.step_1" @click="stepper = 2"> بعدی </v-btn>
+                                    :disabled="!valid.steps.step_1 || register.loading" @click="user_register"> ثبت نام </v-btn>
+                                <v-btn color="info" v-else :disabled="!valid.steps.step_1"
+                                    @click="stepper = 2"> بعدی </v-btn>
                             </transition>
 
                         </v-form>
@@ -212,7 +364,7 @@
                     </v-stepper-content>
 
                     <v-stepper-content step="2" v-if="is_consultant">
-                        <v-form v-model="valid_steps.step_2">
+                        <v-form v-model="valid.steps.step_2">
 
                             <div class="row rtl register">
 
@@ -230,34 +382,42 @@
                                 </div>
 
                                 <div class="col-sm-6">
-                                    <h6 class="rtl bold"> شماره تلفن املاک </h6>
+                                    <h6 class="rtl bold required"> شماره همراه املاک </h6>
                                     <v-text-field
                                         class="small-text-field"
                                         v-model="register.estate_info.phone_number"
-                                        label="شماره تماس املاک را وارد کنید"
+                                        label="شماره همراه املاک را وارد کنید"
                                         reverse
                                         type="number"
                                         outline
                                         single-line
+                                        :rules="[rules.required,rules.phone_number]"
                                     ></v-text-field>
                                 </div>
 
-                                <div class="col-sm-6 mb-4">
-                                    <h6 class="rtl bold required"> منطقه </h6>
-                                    <el-select class="w-100" v-model="register.estate_info.area" placeholder="منطقه">
-                                        <el-option v-for="item in city_areas" :key="item.id" :label="item.name" :value="item.id">
-                                        </el-option>
-                                    </el-select>
-                                </div>
-
                                 <div class="col-sm-6">
-                                    <h6 class="rtl bold required"> نام کاربری ملک </h6>
+                                    <h6 class="rtl bold required"> نام کاربری املاک </h6>
                                     <v-text-field
                                         class="small-text-field"
                                         v-model="register.estate_info.username"
-                                        label="نام املاک خود را وارد کنید"
+                                        label="نام کاربری املاک خود را وارد کنید"
                                         :hint="`لینک صفحه شما : 
                                         www.MaskanShow.ir/<b>${register.estate_info.username}</b>`"
+                                        persistent-hint
+                                        reverse
+                                        outline
+                                        single-line
+                                        :rules="[rules.required,rules.username_regex]"
+                                    ></v-text-field>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <h6 class="rtl bold required"> کد معرف </h6>
+                                    <v-text-field
+                                        class="small-text-field w-100"
+                                        v-model="register.estate_info.reagent_code"
+                                        label="نام کاربری معرف خود را وارد کنید"
+                                        hint="کد معرف ندارید؟ با پشتیبانی تماس بگیرید"
                                         persistent-hint
                                         reverse
                                         outline
@@ -266,11 +426,24 @@
                                     ></v-text-field>
                                 </div>
 
+                                <div class="col-sm-12 mb-4">
+                                    <h6 class="rtl bold required"> منطقه </h6>
+                                    <el-select class="w-100" v-model="register.estate_info.area" placeholder="منطقه">
+                                        <el-option
+                                            class="areas"
+                                            v-for="item in city_areas"
+                                            :key="item.id"
+                                            :label="`${item.name} : ${item.streets.map( el => el.name ).join(' ، ')}` | truncate(50)"
+                                            :value="item.id">
+                                        </el-option>
+                                    </el-select>
+                                </div>
+
                                 <div class="col-md-12">
                                     <h6 class="rtl bold required"> آدرس </h6>
                                     <v-textarea
                                         v-model="register.estate_info.address"
-                                        label="آدرس خود را  وارد کنید "
+                                        label="آدرس املاک خود را وارد کنید "
                                         outline
                                         reverse
                                         :rows="3"
@@ -283,7 +456,7 @@
                                     <h6 class="rtl bold"> توضیحات </h6>
                                     <v-textarea
                                         v-model="register.estate_info.description"
-                                        label="توضیحات خود را  وارد کنید "
+                                        label="توضیحاتی در مورد املاک خود بنویسید "
                                         outline
                                         reverse
                                         :rows="1"
@@ -293,20 +466,12 @@
 
                             </div>
 
-                            <v-btn class="text-white" color="#00E676" :loading="register.loading"
-                                :disabled="!valid_steps.step_2 || register.loading" @click="user_register"> ثبت نام </v-btn>
-                            <v-btn @click="stepper = 1"> قبلی </v-btn>
-
-                            <v-text-field
-                                class="small-text-field w-50 d-inline-block"
-                                v-model="register.estate_info.reagent_code"
-                                label="کد معرف  دارید ؟"
-                                reverse
-                                hide-details
-                                outline
-                                single-line
-                            ></v-text-field>
-
+                            <div class="col-md-6 ltr">
+                                <v-btn class="text-white" color="#00E676" :loading="register.loading"
+                                    :disabled="!valid.steps.step_2 || register.loading" @click="user_register"> ثبت نام </v-btn>
+                                <v-btn @click="stepper = 1"> قبلی </v-btn>
+                            </div>
+                                
                         </v-form>
                     </v-stepper-content>
 
@@ -316,7 +481,7 @@
         </vs-popup>
 
         <div id="back-to-top">
-            <v-btn :color="web_color" fab dark @click="back_to_top">
+            <v-btn :color="web_color" fab dark small @click="back_to_top">
                 <v-icon>expand_less</v-icon>
             </v-btn>
         </div>
@@ -336,11 +501,29 @@
 
         mixins: [mixin] ,
 
+        metaInfo() {
+            return {
+                titleTemplate : `%s | ${this.site_title}`
+            }
+        } ,
+
         created() {
+
+            if(
+                this.$route.path.search('password') != -1 &&
+                this.$route.path.search('reset') != -1 &&
+                this.is_exist(this.$route.params.token)
+            ) {
+                this.Set_state({ prop : 'change_pass_modal' , val : true });
+            } else if(this.$route.path == '/login') {
+                this.Auth
+                ? this.$router.replace({ path : '/' })
+                : this.Set_state({ prop : 'login_modal' , val : true });
+            }
 
             var $vm = this
             window.onscroll = function () {
-                if ( document.documentElement.scrollTop > 150 ) {
+                if ( $(window).scrollTop() > 150 ) {
                     $vm.btn_scroll = true;
                 } else {
                     $vm.btn_scroll = false;
@@ -348,60 +531,96 @@
             };
 
             this.App();
+            this.WatchLocation();
         } ,
 
         data() {
             return {
 
+                site_title : 'مسکن شو' ,
+
                 btn_scroll : false ,
                 stepper : 1 ,
 
-                valid_login : false ,
-                valid_steps : {
-                    step_1 : false ,
-                    step_2 : false
+                valid : {
+                    login : false ,
+                    steps : {
+                        step_1 : false ,
+                        step_2 : false
+                    } ,
+                    reset : false ,
+                    change : false ,
+                    access_code : false
                 } ,
 
                 is_consultant : false ,
 
                 login : {
-                    email : 'imisia99@owner.com' ,
+                    email : '' ,
                     password : {
-                        value : '123456' ,
+                        value : '' ,
                         show : false
                     } ,
+                    access_code : '' ,
                     loading : false
                 } ,
 
                 register : {
-                    username : 'aaaaa' ,
-                    first_name : '2' ,
-                    last_name : '2' ,
-                    email : 'aaa@aaa.com' ,
+                    username : '' ,
+                    first_name : '' ,
+                    last_name : '' ,
+                    email : '' ,
                     password : {
                         show : false ,
-                        value : '2' ,
+                        value : '' ,
                     } ,
                     confirm_password : {
                         show : false ,
-                        value : '2' ,
+                        value : '' ,
                     } ,
-                    phone_number : '09154188517' ,
+                    phone_number : '' ,
                     estate_info : {
-                        name : 'a' ,
-                        phone_number : '09154188517' ,
+                        name : '' ,
+                        phone_number : '' ,
                         reagent_code : '' ,
-                        username : 'aaaaa' ,    
+                        username : '' ,    
                         area : '' ,
-                        address : 'asdf' ,
-                        description : 'asd'
+                        address : '' ,
+                        description : ''
                     } ,
                     loading : false
                 } ,
 
+                reset_pass : {
+                    email : '' ,
+                    loading : false
+                } ,
+
+                change_pass : {
+                    loading : false ,
+                    password : {
+                        value : '' ,
+                        show : false
+                    } ,
+                    confirm_password : {
+                        value : '' ,
+                        show : false
+                    }
+                } ,
+
                 rules : {
                     required: value => !!value || 'این فیلد الزامی است',
-                    counter: value => value.length <= 20 || 'Max 20 characters',
+                    username: value => value.length >= 6 || 'نام کاربری حداقل باید 6 کاراکتر باشد',
+                    password: value => value.length >= 6 || 'رمز عبور حداقل باید 6 کاراکتر باشد',
+                    phone_number: value => value.length == 11 || 'شماره همراه باید 11 رقم باشد',
+                    username_regex: value => {
+                        const pattern_username = /^(?!\d)(?!.*-.*-)(?!.*-$)(?!-)[a-zA-Z0-9-]{0,20}$/
+                        if( value.startsWith('-') || value.match(/^\d/) ) {
+                            return 'نام کاربری نمیتواند با عدد یا خط تیره شروع شود'
+                        } else {
+                            return pattern_username.test(value) || 'نام کاربری شامل حروف لاتین ، عدد و خط تیره میباشد'
+                        }
+                    },
                     email: value => {
                         const pattern = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
                         return pattern.test(value) || 'پست الکترونیک نامعتبر است'
@@ -427,14 +646,32 @@
                 } else {
                     return true
                 }
+            } ,
+
+            match_reset_pass() {
+                if(this.change_pass.password.value) {
+                    return v => (!!v && v) === this.change_pass.password.value || 'رمز عبور با تاییدیه آن مطابقت ندارد'
+                } else {
+                    return true
+                }
             }
             
         } ,
 
         watch : {
+
             btn_scroll(val) {
                 val ? this.anime_btn(true) : this.anime_btn(false)
+            } ,
+
+            'register.username'(val) {
+                this.register.estate_info.username = val; 
+            } ,
+
+            'login.email'(val) {
+                if( val && this.rules.email(val) === true ) this.reset_pass.email = val;
             }
+
         } ,
 
         methods: {
@@ -446,7 +683,9 @@
 
             App() {
 
-                let props = [ 'siteSetting' , 'assignments', 'estate_types' , 'offices' ]
+                this.Set_state({ prop : 'loading' , val : true })
+
+                let props = [ 'siteSetting' , 'assignments', 'estate_types' , 'offices' ];
 
                 let me_query = `
                     me {
@@ -459,6 +698,15 @@
                         remaining_hits_count
                         validity_end_at
                         visited_estate_count
+                        allPermissions {
+                            id
+                            name
+                        }
+                        avatar {
+                            id
+                            file_name
+                            small
+                        }
                     }        
                 `
 
@@ -514,6 +762,12 @@
                                 has_sales_price
                                 has_rental_price
                                 has_mortgage_price
+                                estate_types {
+                                    id
+                                    title
+                                    description
+                                    icon
+                                }
                             }
                         }
 
@@ -545,18 +799,65 @@
                             }
                         }
 
+                        areas(per_page:50) {
+                            data {
+                                id
+                                name
+                                streets {
+                                    id
+                                    name
+                                }
+                            }
+                        }
+
                     }
                 `
 
-                if(this.Auth) props.unshift('me')
+                if(this.Auth) props.unshift('me');
 
-                this.Req_data({
-                    query: query ,
-                    props: props ,
-                    states: props
+                axios({
+                    method : 'POST' ,
+                    url : this.req_url ,
+                    data : {
+                        query : query
+                    }
                 })
-                this.Dynamic_Color()
+                .then( ({data}) => {
+                    if(data.data.siteSetting.title) this.site_title = data.data.siteSetting.title;
+                    if(data.data.siteSetting.theme_color) this.web_color = data.data.siteSetting.theme_color;
+                    props.map( el => {
+                        if( el == 'me' || el == 'siteSetting' ) {
+                            this.Set_state({ prop : el , val : data.data[el] })
+                        } else {
+                            this.Set_state({ prop : el , val : data.data[el].data })
+                        }
+                    })
+                    this.Set_state({ prop : 'city_areas' , val : data.data.areas.data })
+                })
+                .then( () => {
+                    this.Dynamic_Color()
+                    setTimeout(() => {
+                        this.Set_state({ prop : 'loading' , val : false })
+                    }, 500);
+                })
+                .catch( Err => {
+                    if( Err.response && Err.response.status === 401 ) {
+                        window.localStorage.removeItem('JWT');
+                        location.reload();
+                    } else {
+                        console.error(Err);
+                    }
+                })
 
+            } ,
+
+            WatchLocation() {
+                this.$watchLocation({
+                    enableHighAccuracy: true
+                })
+                .then(({lat, lng}) => {
+                    this.Set_state({ prop : 'User_Location' , val : [lat, lng] })
+                })
             } ,
 
             Dynamic_Color() {
@@ -630,6 +931,10 @@
 
                     /* =============== Other =============== */
 
+                    .property-price .read-more {
+                            background-color: ${this.web_color} !important;
+                    }
+
                     .comming-soon {
                         background: ${this.web_color};
                     }
@@ -647,15 +952,44 @@
                         color: #fff;
                     }
 
+                    .vs-con-input .material-icons {
+                        background: ${this.web_color} !important;
+                        box-shadow: 0px 2px 10px -7px #000, 0px 4px 10px -5px ${this.web_color} !important;
+                    }
+
+                    .vs-input-primary .vs-input--input:focus {
+                        border: 1px solid ${this.web_color} !important;
+                    }
+
+                    .sec-title:after {
+                        background: ${this.web_color} !important;
+                    }
+
+                    .sec-title:before {
+                        background: ${this.web_color} !important;
+                    }
+
+                    .grid-list-btn .el-radio-button__orig-radio:checked+.el-radio-button__inner {
+                        background-color: ${this.web_color} !important;
+                        border-color: ${this.web_color} !important;
+                        box-shadow: 1px 3px 8px -4px ${this.web_color}, 0px 2px 6px -6px #000 !important;
+                    }
+
+                    .gallery-item:before {
+                        background: -webkit-gradient(linear, left top, left bottom, from(black), color-stop(70%, ${this.web_color}));
+                        background: -o-linear-gradient(top, black 0%, ${this.web_color} 70%);
+                        background: linear-gradient(to bottom, black 0%, ${this.web_color} 70%);
+                    }
+
                 `;
                 document.getElementsByTagName('head')[0].appendChild(style);
 
             } ,
 
-            change_modal() {
-                this.Set_state({ prop : 'login_modal' , val : false })
+            change_modal( from , to ) {
+                this.Set_state({ prop : from , val : false })
                 setTimeout(() => {
-                    this.Set_state({ prop : 'register_modal' , val : true })
+                    this.Set_state({ prop : to , val : true })
                 }, 300);
             } ,
 
@@ -666,7 +1000,7 @@
                 let query_consultant = `
                     office_name : "${this.register.estate_info.name}" ,
                     office_phone_number : "${this.register.estate_info.phone_number}" ,
-                    ${ !!this.register.estate_info.area ? `office_area_id : ${this.register.estate_info.area} ,` : '' }
+                    ${ !!this.register.estate_info.area ? `area_id : ${this.register.estate_info.area} ,` : '' }
                     office_username : "${this.register.estate_info.username}" ,
                     office_address : "${this.register.estate_info.address}" ,
                     office_description : "${this.register.estate_info.description}" ,
@@ -695,16 +1029,26 @@
                                 }
                             }                            
                         `
+                    } ,
+                    headers : {
+                        'SystemAuthenticationCode' : localStorage.getItem('SAC') ,
                     }
                 })
                 .then( ({data}) => {
                     if( this.is_exist(data) &&
                         this.is_exist(data.data) &&
-                        ( this.is_exist(data.data.register) || this.is_exist(data.data.registerConsultant) ) &&
-                        ( this.is_exist(data.data.register.token) || this.is_exist(data.data.registerConsultant.token) )
+                        (
+                            ( this.is_exist(data.data.register) && this.is_exist(data.data.register.token) ) ||
+                            ( this.is_exist(data.data.registerConsultant) && this.is_exist(data.data.registerConsultant.token) )
+                        )
                     ) {
-                        window.localStorage.setItem( 'JWT' , data.data.register.token );
-                        window.localStorage.setItem( 'SAC' , data.data.register.system_authentication_code );
+                        if(this.is_exist(data.data.register)) {
+                            localStorage.setItem( 'JWT' , data.data.register.token );
+                            localStorage.setItem( 'SAC' , data.data.register.system_authentication_code );
+                        } else {
+                            localStorage.setItem( 'JWT' , data.data.registerConsultant.token );
+                            localStorage.setItem( 'SAC' , data.data.registerConsultant.system_authentication_code );
+                        }
                         location.reload();
                     } else if(
                         this.is_exist(data) &&
@@ -714,6 +1058,9 @@
                         Object.keys(data.errors[0].validation).map( el => {
                             this.notif( data.errors[0].validation[el].join(' ، ') , 'warning' , 'error' , 5000 )
                         })
+                        this.register.loading = false;
+                    } else {
+                        this.notif( 'متاسفانه ثبت نام با موفقیت انجام نشد' , 'warning' , 'error' );
                         this.register.loading = false;
                     }
                 })
@@ -725,7 +1072,19 @@
 
             } ,
 
-            user_login() {
+            user_login(with_access_code = false) {
+
+                if( !with_access_code && !this.valid.login) {
+                    !this.login.email
+                    ? this.notif( 'نام کاربری را وارد کنید' , 'warning' , 'error' )
+                    : this.notif( 'رمز عبور را وارد کنید' , 'warning' , 'error' )
+                    return;
+                } else if( with_access_code && !this.valid.access_code ) {
+                    !this.login.email
+                    ? this.notif( 'نام کاربری را وارد کنید' , 'warning' , 'error' )
+                    : this.notif( 'کد دسترسی را وارد کنید' , 'warning' , 'error' )
+                    return;
+                }
 
                 this.login.loading = true;
 
@@ -735,14 +1094,132 @@
                     data : {
                         query : `
                             mutation {
-                                login
-                                (
-                                    email : "${this.login.email}" ,
-                                    password : "${this.login.password.value}"
+                                ${ with_access_code ? 'loginWithAccessCode' : 'login' } (
+                                    username : "${this.login.email}" ,
+                                    ${ !with_access_code
+                                        ? `password : "${this.login.password.value}"`
+                                        : `access_code : "${this.login.access_code}"`
+                                    }
+                                ) {
+                                    token
+                                    system_authentication_code
+                                }
+                            }                            
+                        `
+                    } ,
+                    headers : {
+                        'SystemAuthenticationCode' : localStorage.getItem('SAC') ,
+                    }
+                })
+                .then( ({data}) => {
+                    if(this.$route.path == '/login') this.$router.replace({ path : '/' });
+                    if( this.is_exist(data) &&
+                        this.is_exist(data.data) &&
+                        (
+                            ( this.is_exist(data.data.login) && data.data.login.token ) ||
+                            ( this.is_exist(data.data.loginWithAccessCode) && data.data.loginWithAccessCode.token )
+                        )
+                    ) { 
+                        if( this.is_exist(data.data.login) ) {
+                            window.localStorage.setItem( 'JWT' , data.data.login.token );
+                            window.localStorage.setItem( 'SAC' , data.data.login.system_authentication_code );
+                        } else {
+                            window.localStorage.setItem( 'JWT' , data.data.loginWithAccessCode.token );
+                            window.localStorage.setItem( 'SAC' , data.data.loginWithAccessCode.system_authentication_code );
+                        }
+                        location.reload();
+                    } else if(data.status == 403) {
+                        let message = `
+                            این حساب بر روی دستگاه شما قابل دسترس نیست ،
+                             در صورتی که این حساب متعلق به شماست برای فعال کردن آن با پشتیبانی سایت در ارتباط باشید
+                        `
+                        this.notif( message , 'warning' , 'error' , 20000 );
+                        this.login.loading = false;
+                    } else if(data.status == 400) {
+                        this.notif( data.message , 'warning' , 'error' , 8000 );
+                        this.login.loading = false;
+                    } else {
+                        this.notif( with_access_code
+                            ? 'عملیات با موفقیت انجام نشد'
+                            : 'نام کاربری یا رمز عبور اشتباه است' , 'warning' , 'error' )
+                        this.login.loading = false;
+                    }
+                })
+                .catch( Err => {
+                    if( Err.response && Err.response.status === 401 ) {
+                        window.localStorage.removeItem('JWT');
+                        location.reload();
+                    } else {
+                        console.log(Err);
+                    }
+                })
+
+            } ,
+
+            reset_password() {
+
+                this.reset_pass.loading = true;
+
+                axios({
+                    method : 'POST' ,
+                    url : this.req_url ,
+                    data : {
+                        query : `
+                            mutation {
+                                requestResetPassword (
+                                    email : "${this.reset_pass.email}"
                                 )
                                 {
+                                    status
+                                    message
+                                }
+                            }                            
+                        `
+                    }
+                })
+                .then( ({data}) => {
+                    if( this.is_exist(data) && this.is_exist(data.data) && this.is_exist(data.data.requestResetPassword) ) {
+
+                        data.data.requestResetPassword.status == 200
+                        ? this.notif( data.data.requestResetPassword.message , 'success' , 'email' , 15000 )
+                        : this.notif( data.data.requestResetPassword.message , 'warning' , 'error' , 8000 ) 
+
+                        this.reset_pass.loading = false;
+                        this.Set_state({ prop : 'reset_pass_modal' , val : false });
+
+                    } else {
+                        this.notif( 'متاسفانه عملیات باموفقیت انجام نشد' , 'warning' , 'error' )
+                        this.reset_pass.loading = false;
+                    }
+                })
+                .catch( Err => {
+                    if( Err.response && Err.response.status === 401 ) {
+                        window.localStorage.removeItem('JWT');
+                        location.reload();
+                    } else {
+                        console.log(Err);
+                    }
+                })
+
+            } ,
+
+            change_password() {
+
+                this.change_pass.loading = true;
+
+                axios({
+                    method : 'POST' ,
+                    url : this.req_url ,
+                    data : {
+                        query : `
+                            mutation {
+                                resetPassword (
+                                    token : "${this.$route.params.token}" ,
+                                    password : "${this.change_pass.password.value}"
+                                    password_confirmation : "${this.change_pass.confirm_password.value}"
+                                ) {
                                     token
-                                    
+                                    system_authentication_code
                                 }
                             }                            
                         `
@@ -754,27 +1231,33 @@
                 .then( ({data}) => {
                     if( this.is_exist(data) &&
                         this.is_exist(data.data) &&
-                        this.is_exist(data.data.login) &&
-                        this.is_exist(data.data.login.token) &&
-                        this.is_exist(data.data.login.system_authentication_code)
+                        this.is_exist(data.data.resetPassword) &&
+                        this.is_exist(data.data.resetPassword.token) &&
+                        this.is_exist(data.data.resetPassword.system_authentication_code)
                     ) {
-                        window.localStorage.setItem( 'JWT' , data.data.login.token );
-                        window.localStorage.setItem( 'SAC' , data.data.login.system_authentication_code );
+                        window.localStorage.setItem( 'JWT' , data.data.resetPassword.token );
+                        window.localStorage.setItem( 'SAC' , data.data.resetPassword.system_authentication_code );
+                        this.$router.replace({ path : '/' })
                         location.reload();
                     } else if(data.status == 403) {
                         let message = `
                             این حساب بر روی دستگاه شما قابل دسترس نیست ،
                              در صورتی که این حساب متعلق به شماست برای فعال کردن آن با پشتیبانی سایت در ارتباط باشید
                         `
-                        this.notif( message , 'warning' , 'error' , 20000 )
+                        this.notif( message , 'warning' , 'error' , 20000 );
+                        this.change_pass.loading = false;
+                    } else if(data.status == 400) {
+                        this.notif( data.message , 'warning' , 'error' , 8000 );
+                        this.change_pass.loading = false;
                     } else {
-                        this.notif( 'نام کاربری یا رمز عبور اشتباه است' , 'warning' , 'error' )
-                        this.login.loading = false;
+                        this.notif( 'متاسفانه عملیات با موفقیت انجام نشد' , 'warning' , 'error' )
+                        this.change_pass.loading = false;
                     }
                 })
                 .catch( Err => {
                     if( Err.response && Err.response.status === 401 ) {
                         window.localStorage.removeItem('JWT');
+                        this.$router.replace({ path : '/' })
                         location.reload();
                     } else {
                         console.log(Err);
@@ -806,16 +1289,40 @@
 
 <style>
 
+    .areas.el-select-dropdown__item {
+        direction: rtl;
+    }
+
+    .forget-pass-text {
+        position: absolute;
+        color: #1ca2bd;
+        left: 10px;
+        cursor: pointer;
+        font-size: 11px;
+        font-weight: 400;
+    }
+
+    .tel-text {
+        color: #1ca2bd !important;
+        cursor: pointer;
+        font-weight: 400;
+    }
+
+    .forget-pass-text:after {
+        left: 0;
+        right: 0;
+        top: 50%;
+        margin-top: .85em;
+        content: "";
+        position: absolute;
+        border-bottom: 1px dashed #1ca2bd;
+    }
+
     #back-to-top {
-        z-index: 999999;
+        z-index: 200;
         position: fixed;
         bottom: 20px;
         right: -80px;
-    }
-
-    #back-to-top .v-btn--floating {
-        height: 50px !important;
-        width: 50px !important;
     }
 
     .el-link.el-link--primary {
@@ -856,6 +1363,12 @@
         font-size: 10px;
     }
 
+    .register-modal .v-messages__message {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
     .v-text-field.v-text-field--enclosed .v-text-field__details {
         min-height: 20px !important;
     }
@@ -865,6 +1378,7 @@
     }
     
     .register h6 {
+        position: relative;
         text-align: right;
         color: #484848;
         padding-right: 5px;

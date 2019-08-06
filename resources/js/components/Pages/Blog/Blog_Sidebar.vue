@@ -79,7 +79,7 @@
             <h4 class="widget_title web-bg"> دسته‌ بندی ها </h4>
             <ul class="list cat-list text-right">
                 <li class="pointer" v-for="(sub,index) in ( is_exist(subjects) ? subjects : all_subjects )" :key="index">
-                    <router-link :to=" '/Blog/' + sub.id ">
+                    <router-link :to=" '/articles/' + sub.id ">
                         <div>
                             <p class="fs-13"> {{ sub.title }} </p>
                         </div>

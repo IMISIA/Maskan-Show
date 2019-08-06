@@ -441,7 +441,7 @@ p {
 .home_banner_area .banner_inner {
   position: relative;
   min-height: 655px;
-  background: url(../img/banner/home-banner.jpg) no-repeat scroll center center;
+  background-size: cover !important;
 }
 
 .home_banner_area .banner_inner .banner_content {
@@ -1013,8 +1013,12 @@ p {
   cursor: pointer;
 }
 
+
 .categories_post img {
   max-width: 100%;
+  border-radius: 10px;
+  height: 210px;
+  width: 100%;
 }
 
 .categories_post .categories_details {
@@ -3671,6 +3675,8 @@ h6 {
 
 .welcome_inner .welcome_img img {
   margin-top: 0px;
+  height: 250px;
+  width: 100%;
 }
 
 .welcome_text h4 {
@@ -3682,7 +3688,7 @@ h6 {
 
 .welcome_text p {
   max-width: 495px;
-  line-height: 24px;
+  line-height: 38px;
   font-family: "iransans", sans-serif;
   font-size: 14px;
   font-weight: normal;
@@ -3870,9 +3876,6 @@ h6 {
 	/* Old browsers */
 	/* FF3.6-15 */
 	/* Chrome10-25,Safari5.1-6 */
-	background: -webkit-gradient(linear, left top, left bottom, from(black), color-stop(70%, #29B6F6));
-	background: -o-linear-gradient(top, black 0%, #29B6F6 70%);
-	background: linear-gradient(to bottom, black 0%, #29B6F6 70%);
 	/* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
 	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#000000', endColorstr='#29B6F6', GradientType=0);
 	/* IE6-9 */
@@ -4545,7 +4548,7 @@ img {
 }
 
 .single-list-content p i {
-	color: #29B6F6 !important;
+	color: #29B6F6;
 	margin-left: 5px;
 }
 
@@ -4675,7 +4678,7 @@ img {
 
 .author-card {
 	padding: 30px;
-	margin-bottom: 30px;
+  margin-bottom: 30px;
 }
 
 .author-card .author-img {
@@ -5086,7 +5089,7 @@ img {
 		padding-top: 15px;
 	}
 	.single-list-slider .sl-item {
-		height: 250px;
+		height: 200px;
 	}
 	.sl-thumb-slider .sl-thumb {
 		height: 60px;
@@ -5425,7 +5428,7 @@ img {
 	top: 0;
 	height: 65px;
 	width: 4px;
-	background-color: #29B6F6;
+	/* background-color: #29B6F6; */
 	content: '';
 }
 
@@ -5435,7 +5438,7 @@ img {
 	top: 0;
 	height: 45px;
 	width: 2px;
-	background-color: #29B6F6;
+	/* background-color: #29B6F6; */
 	content: '';
 }
 
@@ -5520,7 +5523,7 @@ img {
     background:
         linear-gradient(140deg, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.07) 43%, transparent 44%, transparent 100%),
         linear-gradient(105deg, transparent 0%, transparent 40%, rgba(0, 0, 0, 0.06) 41%, rgba(0, 0, 0, 0.07) 76%, transparent 77%, transparent 100%),
-        linear-gradient(to right, #d89ca4, #e27b7e);
+        linear-gradient(to right, #29bdaf, #26A69A);
 }
 .error-container > span.four:before,
 .error-container > span.four:after {
@@ -5537,7 +5540,8 @@ img {
     background:
         linear-gradient(128deg, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.07) 40%, transparent 41%, transparent 100%),
         linear-gradient(116deg, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.07) 50%, transparent 51%, transparent 100%),
-        linear-gradient(to top, #99749D, #B895AB, #CC9AA6, #D7969E, #E0787F);
+        linear-gradient(to right, #26A69A, #29bdaf, #51c3be, #47d3cc, #0fcfc6);
+        /* linear-gradient(to top, #99749D, #B895AB, #CC9AA6, #D7969E, #E0787F); */
 }
 .error-container > span.four:after {
     width: 137px;
@@ -5545,7 +5549,8 @@ img {
     transform: rotate(-49.5deg);
     left: -18px;
     bottom: 36px;
-    background: linear-gradient(to right, #99749D, #B895AB, #CC9AA6, #D7969E, #E0787F);
+    background: linear-gradient(to right, #26A69A, #29bdaf, #51c3be, #47d3cc, #0fcfc6);
+    /* background: linear-gradient(to right, #99749D, #B895AB, #CC9AA6, #D7969E, #E0787F); */
 }
 
 .error-container > span.zero {
@@ -5554,7 +5559,8 @@ img {
     height: 156px;
     border-radius: 999px;
     background: linear-gradient(-45deg, transparent 0%, rgba(0, 0, 0, 0.06) 50%,  transparent 51%, transparent 100%),
-        linear-gradient(to top right, #99749D, #99749D, #B895AB, #CC9AA6, #D7969E, #ED8687, #ED8687);
+        /* linear-gradient(to top right, #99749D, #99749D, #B895AB, #CC9AA6, #D7969E, #ED8687, #ED8687); */
+        linear-gradient(to top right, #26A69A, #29bdaf, #51c3be, #47d3cc, #0fcfc6);
     overflow: hidden;
     animation: bgshadow 5s infinite;
 }
@@ -5611,5 +5617,3 @@ img {
 }
 
 /*---------------------------------------------------- */
-
-/*# sourceMappingURL=style.css.map */

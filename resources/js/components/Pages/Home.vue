@@ -15,3 +15,13 @@
 
     </div>
 </template>
+
+<script>
+    export default {
+        metaInfo() {
+            return {
+                title : 'صفحه اصلی' ,
+            }
+        }
+    }
+</script>

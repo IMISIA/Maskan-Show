@@ -1,31 +1,47 @@
 <template>
     <div>
 
+        <!-- Banner -->
         <section class="banner_area">
             <div class="banner_inner d-flex align-items-center">
                 <div class="overlay bg-parallax" data-stellar-ratio="0.9" data-stellar-vertical-offset="0"
                     data-background=""></div>
 
+                <!-- Office Estate Information ( PC Mode ) -->
                 <div class="container mb-5 pb-5 profile-estate" v-if=" !Res && username_clt && is_exist(office) ">
                     <div class="row rtl">
 
-                        <div class="col-md-10 text-right d-flex flex-column justify-content-around mt-xs-4">
+                        <div class="col-md-2 d-flex justify-content-center align-items-center">
+                            <qrcode class="rounded flex-unset" :value="`http://maskanshow.ir/${office.name}`"
+                                :options="{ width: 100 }">
+                            </qrcode>
+                        </div>
 
-                            <div class="username"> {{ office.name }} </div>
-
+                        <div class="col-md-4 text-right d-flex justify-content-around align-items-center">
                             <div>
+
+                                <div class="username mb-3"> {{ office.name }} </div>
+
                                 <p class="mb-2 text-right">
-                                    <i class="fa fa-map-marker ml-2 fs-20 bold web-color"></i>
+                                    <i class="fa fa-map-marker-alt ml-2 fs-20 bold web-color"></i>
                                     {{  ( office.area && office.area.name ? office.area.name +' ، ' : '' ) + office.address }}
                                 </p>
 
-                                <p class="mb-0 text-right">
+                                <p class="mb-2 text-right" v-if="office.phone_number">
                                     <i class="fa fa-phone ml-2 fs-20 bold web-color"></i>
                                     {{ office.phone_number }}
                                 </p>
+
                             </div>
+                        </div>
 
-
+                        <div class="col-md-4 text-right d-flex justify-content-around">
+                            <div>
+                                <p class="mb-0 text-right" v-if="office.description">
+                                    <i class="fa fa-book ml-2 fs-20 bold web-color"></i>
+                                    {{ office.description }}
+                                </p>
+                            </div>
                         </div>
 
                         <div class="col-md-2 text-left">
@@ -41,6 +57,7 @@
                     </div>
                 </div>
 
+                <!-- Breadcrumbs -->
                 <div class="container mb-5 pb-5 rtl" v-if="!username_clt && !is_exist(office) ">
                     <v-breadcrumbs :items="Breadcrumb">
                         <template v-slot:divider>
@@ -52,7 +69,8 @@
             </div>
         </section>
 
-        <div class="profile-estate responsive as-shadow" v-if=" Res && username_clt && is_exist(office) ">
+        <!-- Office Estate Information ( Responsive Mode ) -->
+        <div class="profile-estate responsive" v-if=" Res && username_clt && is_exist(office) ">
             <div class="container">
                 <div class="row rtl">
 
@@ -71,7 +89,7 @@
                         <div class="username"> {{ office.name }} </div>
 
                         <p class="mt-3 mb-0 text-center">
-                            <i class="fa fa-map-marker ml-2 fs-20 bold web-color"></i>
+                            <i class="fa fa-map-marker-alt ml-2 fs-20 bold web-color"></i>
                             {{  ( office.area && office.area.name ? office.area.name +' ، ' : '' ) + office.address }}
                         </p>
 
@@ -86,10 +104,26 @@
             </div>
         </div>
 
-        <div class="container filter-bar" v-if="!Res">
-            <div class="row rtl p-5">
+        <div class="mt-5 px-5" :class="{ 'pt-xs-60 py-4' : Res && is_exist($route.params) }">
+            <template v-if=" Res && username_clt && is_exist(office) && office.description ">
+                <div class="text-center">
+                    <qrcode class="rounded flex-unset" :value="`http://maskanshow.ir/${office.name}`"
+                        :options="{ width: 100 }">
+                    </qrcode>                
+                </div>
 
-                <div class="as-main-btn hvr-ripple-out" @click="Apply_filters">
+                <p class="text-right">
+                    <i class="fa fa-book ml-2 fs-20 bold web-color"></i>
+                    {{ office.description }}
+                </p>
+            </template>
+        </div>
+
+        <!-- Filter Bar ( PC Mode ) -->
+        <div class="container filter-bar" v-if="!Res">
+            <div class="row rtl p-5" id="filter-bar" ref="filterBar">
+
+                <div class="as-main-btn hvr-ripple-out" @click="Apply_filters(false)">
                     <i class="material-icons ">search</i>
                 </div>
 
@@ -127,14 +161,14 @@
                 <div class="col-md-2">
                     <el-select v-model="estate_types_select" @change="set_dynamic_filters"
                         placeholder="نوع ملک" clearable no-data-text="نوع واگذاری انتخاب نشده">
-                        <el-option v-for="item in estate_types" :key="item.id" :label="item.title" :value="item.id">
+                        <el-option v-for="item in custom_estate_types" :key="item.id" :label="item.title" :value="item.id">
                         </el-option>
                     </el-select>
                 </div>
 
                 <!-- Area -->
                 <div class="col-md-2">
-                    <el-popover placement="bottom" width="295" trigger="click">
+                    <el-popover v-model="area.popover" placement="bottom" width="295" trigger="click">
                         
                         <el-button slot="reference" class="btn-range w-100 text-right" plain>
                             {{ area.label }}
@@ -180,10 +214,23 @@
                         <div class="input-price d-flex justify-content-between pt-2">
                             <v-btn class="mb-0" flat :color="web_color"
                                 @click="filter_area"> اعمال </v-btn>
-                            <v-btn class="mb-0" flat color="#999" @click="Cansel('area')"> بیخیال </v-btn>
+                            <v-btn class="mb-0 text-danger" flat color="#999" @click="Cansel('area')"> حذف فیلتر </v-btn>
                         </div>
 
                     </el-popover>    
+                </div>
+
+                <!-- Dynamic Filters -->
+                <div class="col-md-2" v-for="filter in ( dynamic_filters.spec ? dynamic_filters.spec.filters : [] )" :key="filter.id">
+                    <el-select v-model="bind_filters[filter.id]" :placeholder="filter.title" multiple collapse-tags>
+                        <el-option
+                            class="rtl"
+                            v-for="item in filter.defaults"
+                            :key="item.id"
+                            :label="filter.prefix +' '+ item.value +' '+ filter.postfix"
+                            :value="item.id">
+                        </el-option>
+                    </el-select>
                 </div>
 
                 <!-- Estate Options -->
@@ -192,7 +239,7 @@
                         v-model="options_select"
                         multiple
                         collapse-tags
-                        no-data-text="نوع ملک انتخاب نشده"
+                        :no-data-text=" estate_types_select ? 'موردی وجود ندارد' : 'نوع ملک انتخاب نشده' "
                         placeholder="امکانات">
                             <el-option
                             v-for="item in dynamic_filters.features"
@@ -210,7 +257,7 @@
 
                 <!-- Search -->
                 <div class="col-md-2 mt-3">
-                    <vs-input icon="search" label-placeholder="جستجو" v-model="search"/>
+                    <vs-input icon="search" label-placeholder="آدرس واژه" v-model="search"/>
                 </div>
 
                 <!-- Owner -->
@@ -228,18 +275,10 @@
                     <vs-input class="date-picker" icon="date_range" readonly label-placeholder="تاریخ ثبت" v-model="date"/>
                 </div>
 
-                <!-- Estate Types -->
-                <div class="col-md-2 mt-3" v-for="filter in ( dynamic_filters.spec ? dynamic_filters.spec.filters : [] )" :key="filter.id">
-                    <el-select v-model="bind_filters[filter.id]" :placeholder="filter.title" multiple collapse-tags>
-                        <el-option v-for="item in filter.defaults" :key="item.id" :label="item.value" :value="item.id">
-                        </el-option>
-                    </el-select>
-                </div>
-
                 <transition name="fade" mode="out-in">
                     <!-- Sales Price Input -->
                     <div class="col-md-2 mt-3" v-if="sales_price.is_active">
-                        <el-popover placement="bottom" width="295" trigger="click">
+                        <el-popover v-model="sales_price.popover" placement="bottom" width="295" trigger="click">
                             
                             <el-button slot="reference" class="btn-range pr-2 w-100 text-right" plain>
                                 <i class="el-icon-arrow-down"></i>
@@ -285,7 +324,7 @@
                             <div class="input-price d-flex justify-content-between pt-2">
                                 <v-btn class="mb-0" flat :color="web_color"
                                     @click="filter_range('sales_price',sales_price.default_label)"> اعمال </v-btn>
-                                <v-btn class="mb-0" flat color="#999" @click="Cansel('sales_price')"> بیخیال </v-btn>
+                                <v-btn class="mb-0 text-danger" flat color="#999" @click="Cansel('sales_price')"> حذف فیلتر </v-btn>
                             </div>
 
                         </el-popover>
@@ -295,7 +334,7 @@
                 <transition name="fade" mode="out-in">
                     <!-- Mortgage Price Input -->
                     <div class="col-md-2 mt-3" v-if="mortgage_price.is_active">
-                        <el-popover placement="bottom" width="295" trigger="click">
+                        <el-popover v-model="mortgage_price.popover" placement="bottom" width="295" trigger="click">
                             
                             <el-button slot="reference" class="btn-range pr-2 w-100 text-right" plain>
                                 <i class="el-icon-arrow-down"></i>
@@ -341,7 +380,7 @@
                             <div class="input-price d-flex justify-content-between pt-2">
                                 <v-btn class="mb-0" flat :color="web_color"
                                     @click="filter_range('mortgage_price',mortgage_price.default_label)"> اعمال </v-btn>
-                                <v-btn class="mb-0" flat color="#999" @click="Cansel('mortgage_price')"> بیخیال </v-btn>
+                                <v-btn class="mb-0 text-danger" flat color="#999" @click="Cansel('mortgage_price')"> حذف فیلتر </v-btn>
                             </div>
 
                         </el-popover>
@@ -351,7 +390,7 @@
                 <transition name="fade" mode="out-in">
                     <!-- Rental Price Input -->
                     <div class="col-md-2 mt-3" v-if="rental_price.is_active">
-                        <el-popover placement="bottom" width="295" trigger="click">
+                        <el-popover v-model="rental_price.popover" placement="bottom" width="295" trigger="click">
                             
                             <el-button slot="reference" class="btn-range pr-2 w-100 text-right" plain>
                                 <i class="el-icon-arrow-down"></i>
@@ -397,7 +436,7 @@
                             <div class="input-price d-flex justify-content-between pt-2">
                                 <v-btn class="mb-0" flat :color="web_color"
                                     @click="filter_range('rental_price',rental_price.default_label)"> اعمال </v-btn>
-                                <v-btn class="mb-0" flat color="#999" @click="Cansel('rental_price')"> بیخیال </v-btn>
+                                <v-btn class="mb-0 text-danger" flat color="#999" @click="Cansel('rental_price')"> حذف فیلتر </v-btn>
                             </div>
 
                         </el-popover>
@@ -409,29 +448,40 @@
 
         <date-picker v-model="date" element="date-picker"></date-picker>
 
+        <!-- Estates Component With Slots -->
         <Estates :class="{ 'mb-5' : !(total > 1) }" :title="title">
             <template #sort>
                 <div class="d-flex align-items-center sort-btn ml-3" v-if="!Res">
-                    <el-radio-group v-model="ordering">
-                        <el-radio-button label="newest">
-                            جدیدترین
-                        </el-radio-button>
-                        <el-radio-button label="oldest">
-                            قدیمی‌ترین
-                        </el-radio-button>
-                    </el-radio-group>
+                    <div class="rtl">
+                        <el-select v-model="ordering" placeholder="مرتب سازی">
+                            <el-option
+                                v-for="item in sort_items"
+                                :key="item.value"
+                                :label="item.label"
+                                :value="item.value">
+                            </el-option>
+                        </el-select>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center sort-btn ml-4" v-if="!Res">
+                    <div class="rtl checkbox assign">
+                        <v-checkbox
+                            class="mt-2"
+                            v-model="is_assignemnt"
+                            :color="web_color"
+                            label="ملک های واگذار نشده">
+                        </v-checkbox>
+                    </div>
                 </div>
             </template>
         </Estates>
 
-        <div class="properties_area mt-4" v-if="total > 1">
+        <!-- Pagination -->
+        <div class="properties_area mt-4 pb-0" v-if="total > 1">
             <vs-pagination :color="web_color" :total="total" v-model="page"></vs-pagination>
         </div>
 
-        <Feature></Feature>
-
-        <Cities></Cities>
-
+        <!-- Filter Bar ( Responsive Mode ) -->
         <v-app>
             <v-dialog v-model="dialog_filters" fullscreen scrollable hide-overlay transition="dialog-bottom-transition">
                 <v-card class="dialog_filters">
@@ -451,8 +501,17 @@
                     <v-card-text class="mt-5">
                         <div class="rtl p-4">
 
+                            <div class="rtl checkbox">
+                                <v-checkbox
+                                    class="mt-2"
+                                    v-model="is_assignemnt"
+                                    :color="web_color"
+                                    label="نمایش ملک های واگذار نشده">
+                                </v-checkbox>
+                            </div>
+
                             <!-- City Areas -->
-                            <div class="mb-4">
+                            <div class="mb-4 mt-2">
                                 <el-cascader
                                     class="w-100"
                                     v-model="areas_select"
@@ -482,14 +541,14 @@
                             <div class="mb-4">
                                 <el-select v-model="estate_types_select" @change="set_dynamic_filters"
                                     placeholder="نوع ملک" no-data-text="نوع واگذاری انتخاب نشده">
-                                    <el-option v-for="item in estate_types" :key="item.id" :label="item.title" :value="item.id">
+                                    <el-option v-for="item in custom_estate_types" :key="item.id" :label="item.title" :value="item.id">
                                     </el-option>
                                 </el-select>
                             </div>
 
                             <!-- Search -->
                             <div class="mb-4">
-                                <el-input placeholder="جستجو" v-model="search"></el-input>
+                                <el-input placeholder="آدرس واژه" v-model="search"></el-input>
                             </div>
 
                             <!-- Owner -->
@@ -512,13 +571,26 @@
                                 </div>
                             </div>
 
+                            <!-- Dynamic Filters -->
+                            <div class="mt-4" v-for="filter in ( dynamic_filters.spec ? dynamic_filters.spec.filters : [] )" :key="filter.id">
+                                <el-select v-model="bind_filters[filter.id]" :placeholder="filter.title" multiple collapse-tags>
+                                    <el-option
+                                        class="rtl"
+                                        v-for="item in filter.defaults"
+                                        :key="item.id"
+                                        :label="filter.prefix +' '+ item.value +' '+ filter.postfix"
+                                        :value="item.id">
+                                    </el-option>
+                                </el-select>
+                            </div>
+
                             <!-- Estate Options -->
                             <div class="mt-4">
                                 <el-select
                                     v-model="options_select"
                                     multiple
                                     collapse-tags
-                                    no-data-text="نوع ملک انتخاب نشده"
+                                    :no-data-text=" estate_types_select ? 'موردی وجود ندارد' : 'نوع ملک انتخاب نشده' "
                                     placeholder="امکانات">
                                         <el-option
                                         v-for="item in dynamic_filters.features"
@@ -526,14 +598,6 @@
                                         :label="item.title"
                                         :value="item.id">
                                         </el-option>
-                                </el-select>
-                            </div>
-
-                            <!-- Estate Types -->
-                            <div class="mt-4" v-for="filter in ( dynamic_filters.spec ? dynamic_filters.spec.filters : [] )" :key="filter.id">
-                                <el-select v-model="bind_filters[filter.id]" :placeholder="filter.title" multiple collapse-tags>
-                                    <el-option v-for="item in filter.defaults" :key="item.id" :label="item.value" :value="item.id">
-                                    </el-option>
                                 </el-select>
                             </div>
 
@@ -570,9 +634,9 @@
                         </div>
                     </v-card-text>
 
-                    <div class="row m-0 mb-1">
-                        <v-btn :color="web_color_dark" dark large width="50%" @click="Apply_filters"> جستجو </v-btn>
-                        <v-btn color="#E91E63" dark large @click="Delete_filters">
+                    <div class="row m-0 mb-1 d-flex">
+                        <v-btn :color="web_color_dark" dark large width="50%" @click="Apply_filters(false)"> جستجو </v-btn>
+                        <v-btn class="mv-25" color="#E91E63" dark large @click="Delete_filters">
                             <v-icon dark>delete</v-icon>
                         </v-btn>
                     </div>
@@ -580,6 +644,19 @@
                 </v-card>
             </v-dialog>
         </v-app>
+
+        <vs-popup class="dialog_sort" title="مرتب سازی" :active.sync="$store.state.dialog_sort">
+            <v-radio-group v-model="ordering">
+                <v-radio
+                    class="mb-3"
+                    :color="web_color"
+                    v-for="item in sort_items"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                ></v-radio>
+            </v-radio-group>
+        </vs-popup>
 
     </div>
 </template>
@@ -590,13 +667,30 @@
     import mixin from '../../mixin';
     import moment from '../../moment';
     import DatetimePicker from 'vue-persian-datetime-picker';
+    import qrcode from '@chenfengyuan/vue-qrcode';
 
     export default {
 
         mixins : [mixin,moment] ,
 
+        beforeRouteEnter(to, from, next) {
+            if(from.path == '/') {
+                scrollTo(document.body, 0, 1000);
+            }
+            next(vm => {
+                vm.prevRoute = from
+            })
+        },
+
+        metaInfo() {
+            return {
+                title : this.title || 'ملک های مشهد' ,
+            }
+        } ,
+
         components : {
-            datePicker : DatetimePicker
+            datePicker : DatetimePicker ,
+            qrcode
         } ,
         
         created() {
@@ -614,13 +708,14 @@
                                     name
                                     phone_number
                                     area {
-                                    name
-                                    streets {
-                                        id
                                         name
-                                    }
+                                        streets {
+                                            id
+                                            name
+                                        }
                                     }
                                     address
+                                    description
                                     owner {
                                         avatar {
                                             id 
@@ -636,6 +731,8 @@
                 .then( ({data}) => {
                     if( this.is_exist(data.data.office) ) {
                         this.Set_state({ prop : 'office' , val : data.data.office });
+                    } else {
+                        this.$router.push('/404-nf');
                     }
                 })
                 .then( () => {
@@ -681,10 +778,13 @@
                 owner : '' ,
                 phone_owner : '' ,
                 date : '' ,
-                ordering : 'newest' ,
+
+                ordering : 'latest' ,
+                is_assignemnt : false ,
 
                 area : {
                     is_active : false ,
+                    popover : false ,
                     min : {
                         value : '' ,
                         active_defaults : true ,
@@ -737,18 +837,28 @@
 
                 sales_price : {
                     is_active : false ,
+                    popover : false ,
                     min : {
                         value : '' ,
                         active_defaults : true ,
                         defaults : [
                             { value : 0 , disabled : false } ,
-                            { value : 50000000 , disabled : false } ,
+                            { value : 50000000  , disabled : false } ,
                             { value : 100000000 , disabled : false } ,
+                            { value : 150000000 , disabled : false } ,
                             { value : 200000000 , disabled : false } ,
+                            { value : 250000000 , disabled : false } ,
                             { value : 300000000 , disabled : false } ,
+                            { value : 350000000 , disabled : false } ,
                             { value : 400000000 , disabled : false } ,
+                            { value : 450000000 , disabled : false } ,
                             { value : 500000000 , disabled : false } ,
+                            { value : 600000000 , disabled : false } ,
+                            { value : 700000000 , disabled : false } ,
+                            { value : 800000000 , disabled : false } ,
+                            { value : 900000000 , disabled : false } ,
                             { value : 1000000000 , disabled : false } ,
+                            { value : 1500000000 , disabled : false } ,
                             { value : 2000000000 , disabled : false } ,
                             { value : 3000000000 , disabled : false } ,
                             { value : 4000000000 , disabled : false } ,
@@ -760,13 +870,22 @@
                         active_defaults : false ,
                         defaults : [
                             { value : 0 , disabled : false } ,
-                            { value : 50000000 , disabled : false } ,
+                            { value : 50000000  , disabled : false } ,
                             { value : 100000000 , disabled : false } ,
+                            { value : 150000000 , disabled : false } ,
                             { value : 200000000 , disabled : false } ,
+                            { value : 250000000 , disabled : false } ,
                             { value : 300000000 , disabled : false } ,
+                            { value : 350000000 , disabled : false } ,
                             { value : 400000000 , disabled : false } ,
+                            { value : 450000000 , disabled : false } ,
                             { value : 500000000 , disabled : false } ,
+                            { value : 600000000 , disabled : false } ,
+                            { value : 700000000 , disabled : false } ,
+                            { value : 800000000 , disabled : false } ,
+                            { value : 900000000 , disabled : false } ,
                             { value : 1000000000 , disabled : false } ,
+                            { value : 1500000000 , disabled : false } ,
                             { value : 2000000000 , disabled : false } ,
                             { value : 3000000000 , disabled : false } ,
                             { value : 4000000000 , disabled : false } ,
@@ -779,22 +898,25 @@
                 
                 mortgage_price : {
                     is_active : false ,
+                    popover : false ,
                     min : {
                         value : '' ,
                         active_defaults : true ,
                         defaults : [
                             { value : 0 , disabled : false } ,
+                            { value : 2000000 , disabled : false } ,
+                            { value : 5000000 , disabled : false } ,
+                            { value : 10000000 , disabled : false } ,
+                            { value : 15000000 , disabled : false } ,
+                            { value : 20000000 , disabled : false } ,
+                            { value : 30000000 , disabled : false } ,
+                            { value : 40000000 , disabled : false } ,
                             { value : 50000000 , disabled : false } ,
+                            { value : 60000000 , disabled : false } ,
+                            { value : 70000000 , disabled : false } ,
+                            { value : 80000000 , disabled : false } ,
+                            { value : 90000000 , disabled : false } ,
                             { value : 100000000 , disabled : false } ,
-                            { value : 200000000 , disabled : false } ,
-                            { value : 300000000 , disabled : false } ,
-                            { value : 400000000 , disabled : false } ,
-                            { value : 500000000 , disabled : false } ,
-                            { value : 1000000000 , disabled : false } ,
-                            { value : 2000000000 , disabled : false } ,
-                            { value : 3000000000 , disabled : false } ,
-                            { value : 4000000000 , disabled : false } ,
-                            { value : 5000000000 , disabled : false }
                         ]
                     } ,
                     max : {
@@ -802,17 +924,19 @@
                         active_defaults : false ,
                         defaults : [
                             { value : 0 , disabled : false } ,
+                            { value : 2000000 , disabled : false } ,
+                            { value : 5000000 , disabled : false } ,
+                            { value : 10000000 , disabled : false } ,
+                            { value : 15000000 , disabled : false } ,
+                            { value : 20000000 , disabled : false } ,
+                            { value : 30000000 , disabled : false } ,
+                            { value : 40000000 , disabled : false } ,
                             { value : 50000000 , disabled : false } ,
+                            { value : 60000000 , disabled : false } ,
+                            { value : 70000000 , disabled : false } ,
+                            { value : 80000000 , disabled : false } ,
+                            { value : 90000000 , disabled : false } ,
                             { value : 100000000 , disabled : false } ,
-                            { value : 200000000 , disabled : false } ,
-                            { value : 300000000 , disabled : false } ,
-                            { value : 400000000 , disabled : false } ,
-                            { value : 500000000 , disabled : false } ,
-                            { value : 1000000000 , disabled : false } ,
-                            { value : 2000000000 , disabled : false } ,
-                            { value : 3000000000 , disabled : false } ,
-                            { value : 4000000000 , disabled : false } ,
-                            { value : 5000000000 , disabled : false }
                         ]
                     } ,
                     label : 'رهن' ,
@@ -821,22 +945,31 @@
 
                 rental_price : {
                     is_active : false ,
+                    popover : false ,
                     min : {
                         value : '' ,
                         active_defaults : true ,
                         defaults : [
                             { value : 0 , disabled : false } ,
-                            { value : 50000000 , disabled : false } ,
-                            { value : 100000000 , disabled : false } ,
-                            { value : 200000000 , disabled : false } ,
-                            { value : 300000000 , disabled : false } ,
-                            { value : 400000000 , disabled : false } ,
-                            { value : 500000000 , disabled : false } ,
-                            { value : 1000000000 , disabled : false } ,
-                            { value : 2000000000 , disabled : false } ,
-                            { value : 3000000000 , disabled : false } ,
-                            { value : 4000000000 , disabled : false } ,
-                            { value : 5000000000 , disabled : false }
+                            { value : 100000 , disabled : false } ,
+                            { value : 200000 , disabled : false } ,
+                            { value : 300000 , disabled : false } ,
+                            { value : 400000 , disabled : false } ,
+                            { value : 500000 , disabled : false } ,
+                            { value : 600000 , disabled : false } ,
+                            { value : 700000 , disabled : false } ,
+                            { value : 800000 , disabled : false } ,
+                            { value : 900000 , disabled : false } ,
+                            { value : 1000000 , disabled : false } ,
+                            { value : 1100000 , disabled : false } ,
+                            { value : 1200000 , disabled : false } ,
+                            { value : 1300000 , disabled : false } ,
+                            { value : 1400000 , disabled : false } ,
+                            { value : 1500000 , disabled : false } ,
+                            { value : 2000000 , disabled : false } ,
+                            { value : 3000000 , disabled : false } ,
+                            { value : 4000000 , disabled : false } ,
+                            { value : 5000000 , disabled : false } ,
                         ]
                     } ,
                     max : {
@@ -844,17 +977,25 @@
                         active_defaults : false ,
                         defaults : [
                             { value : 0 , disabled : false } ,
-                            { value : 50000000 , disabled : false } ,
-                            { value : 100000000 , disabled : false } ,
-                            { value : 200000000 , disabled : false } ,
-                            { value : 300000000 , disabled : false } ,
-                            { value : 400000000 , disabled : false } ,
-                            { value : 500000000 , disabled : false } ,
-                            { value : 1000000000 , disabled : false } ,
-                            { value : 2000000000 , disabled : false } ,
-                            { value : 3000000000 , disabled : false } ,
-                            { value : 4000000000 , disabled : false } ,
-                            { value : 5000000000 , disabled : false }
+                            { value : 100000 , disabled : false } ,
+                            { value : 200000 , disabled : false } ,
+                            { value : 300000 , disabled : false } ,
+                            { value : 400000 , disabled : false } ,
+                            { value : 500000 , disabled : false } ,
+                            { value : 600000 , disabled : false } ,
+                            { value : 700000 , disabled : false } ,
+                            { value : 800000 , disabled : false } ,
+                            { value : 900000 , disabled : false } ,
+                            { value : 1000000 , disabled : false } ,
+                            { value : 1100000 , disabled : false } ,
+                            { value : 1200000 , disabled : false } ,
+                            { value : 1300000 , disabled : false } ,
+                            { value : 1400000 , disabled : false } ,
+                            { value : 1500000 , disabled : false } ,
+                            { value : 2000000 , disabled : false } ,
+                            { value : 3000000 , disabled : false } ,
+                            { value : 4000000 , disabled : false } ,
+                            { value : 5000000 , disabled : false } ,
                         ]
                     } ,
                     label : 'اجاره' ,
@@ -881,7 +1022,7 @@
                 ] ,
 
                 page : 1 ,
-                per_page : 15 ,
+                per_page : 20 ,
 
             }
         } ,
@@ -890,7 +1031,6 @@
 
             ...mapState([
                 'dynamic_filters' ,
-                'dynamic_filters.features' ,
                 'city_areas' ,
                 'area_streets' ,
                 'assignments' ,
@@ -901,6 +1041,14 @@
                 'office' ,
                 'url'
             ]) ,
+
+            custom_estate_types() {
+                if(this.assignments_select) {
+                    return this.assignments.find( el => el.id == this.assignments_select ).estate_types
+                } else {
+                    return this.estate_types;
+                }
+            } ,
 
             total() {
                 return Math.ceil(this.pagination.total/this.per_page)
@@ -981,45 +1129,87 @@
 
             } ,
 
+            sort_items() {
+
+                let arr = [
+                    {
+                        label : 'جدیدترین' ,
+                        value : 'latest'
+                    } ,
+                    {
+                        label : 'قدیمی‌ترین' ,
+                        value : 'oldest'
+                    } ,
+                ]
+                
+                if(this.assignments_select) {
+                    this.assignments.map( el => {
+                        if( el.id == this.assignments_select ) {
+                            if(el.has_sales_price) {
+                                
+                                let temp = [
+                                    {
+                                        label : 'بالاترین قیمت خرید' ,
+                                        value : 'max_sales_price'
+                                    } ,
+                                    {
+                                        label : 'پایین‌ترین قیمت خرید' ,
+                                        value : 'min_sales_price'
+                                    }
+                                ];
+                                arr = [ ...arr , ...temp ];
+
+                            } else if( el.has_mortgage_price && el.has_rental_price ) {
+
+                                let temp = [
+                                    {
+                                        label : 'بالاترین قیمت رهن' ,
+                                        value : 'max_mortgage_price'
+                                    } ,
+                                    {
+                                        label : 'پایین‌ترین قیمت رهن' ,
+                                        value : 'min_mortgage_price'
+                                    } ,
+                                    {
+                                        label : 'بالاترین قیمت اجاره' ,
+                                        value : 'max_rental_price'
+                                    } ,
+                                    {
+                                        label : 'پایین‌ترین قیمت اجاره' ,
+                                        value : 'min_rental_price'
+                                    }
+                                ];
+                                arr = [ ...arr , ...temp ];
+
+                            } else if( el.has_mortgage_price || el.has_rental_price ) {
+                                
+                                let temp = [
+                                    {
+                                        label : el.has_mortgage_price ? 'بالاترین قیمت رهن' : 'بالاترین قیمت اجاره' ,
+                                        value : el.has_mortgage_price ? 'max_mortgage_price' : 'max_rental_price'
+                                    } ,
+                                    {
+                                        label : el.has_mortgage_price ? 'پایین‌ترین قیمت رهن' : 'پایین‌ترین قیمت اجاره' ,
+                                        value : el.has_mortgage_price ? 'min_mortgage_price' : 'min_rental_price'
+                                    }
+                                ];
+                                arr = [ ...arr , ...temp ];
+
+                            }
+                        }
+                    })
+                }
+
+                return arr;
+
+            }
+
         } ,
 
         watch : {
-            
-            page(val) {
-                this.Req_data({
-                    query : `
-                        {
-                            estates( per_page : ${this.per_page} , page : ${val} ) {
-                                data {
-                                    id
-                                    title
-                                    photos {
-                                        id
-                                        file_name
-                                        medium
-                                    }
-                                    address
-                                    area
-                                    rental_price
-                                    mortgage_price
-                                    sales_price
-                                    created_at
-                                    assignment {
-                                        id
-                                        title
-                                        color
-                                    }
-                                    estate_type {
-                                        id
-                                        title
-                                    }
-                                }
-                                total
-                            }
-                        }` ,
-                    props : ['estates'] ,
-                    states : ['Estates'] ,
-                })
+
+            page() {
+                this.Apply_filters(true);
             } ,
 
             areas_select(val) {
@@ -1027,7 +1217,6 @@
             } ,
 
             '$route.path'() {
-
                 if(this.username_clt) {
 
                     axios({
@@ -1066,7 +1255,7 @@
                         }
                     })
                     .then( () => {
-                        this.Apply_filters();
+                        this.Apply_filters(false);
                     })
                     .catch( Err => {
                         console.error(Err);
@@ -1075,12 +1264,17 @@
                 } else {
 
                     this.Set_state({ prop : 'office' , val : {} })
-                    this.Apply_filters();
+                    this.Apply_filters(false);
 
                 }
 
                 this.set_default_filters();
 
+            } ,
+
+            '$route.query'() {
+                this.set_default_filters();
+                this.Apply_filters(false);
             } ,
 
             options_select(val) {
@@ -1094,8 +1288,13 @@
             } ,
 
             ordering(val) {
-                if(!val) this.ordering = 'newest';
-                this.Apply_filters();
+                if(!val) this.ordering = 'latest';
+                this.Apply_filters(false);
+                this.Set_state({ prop : 'dialog_sort' , val : false });
+            } ,
+
+            is_assignemnt() {
+                this.Apply_filters(false);
             }
 
         } ,
@@ -1111,17 +1310,6 @@
 
                 let query = `
                     {
-                        areas(per_page:50) {
-                            data {
-                                id
-                                name
-                                streets {
-                                    id
-                                    name
-                                }
-                            }
-                        }
-
                         estates(
                             page : 1 ,
                             per_page : ${this.per_page} ,
@@ -1157,7 +1345,9 @@
                                 id
                                 code
                                 title
+                                is_active
                                 is_mine
+                                is_favorite
                                 photos {
                                     id
                                     file_name
@@ -1183,6 +1373,7 @@
                                 }
                                 creator {
                                     id
+                                    username
                                     is_public_info
                                     first_name
                                     last_name
@@ -1206,7 +1397,7 @@
                                         icon
                                     }
                                 }
-                                features {
+                                detailable_features {
                                     id
                                     icon
                                     title
@@ -1233,15 +1424,23 @@
                         }
                     }
                 `
-
+                
                 this.Req_data({
                     query : query ,
-                    props : [ 'areas' , 'estates' ] ,
-                    states : [ 'city_areas' , 'Estates' ] ,
+                    props : ['estates'] ,
+                    states : ['Estates'] ,
                 })
             } ,
 
-            Apply_filters() {
+            Apply_filters(watch_page = false) {
+
+                if(!watch_page) {
+                    this.page = 1;
+                } else {
+                    this.$vuetify.goTo( 400 , {
+                        duration : 1000 ,
+                    })
+                }
 
                 if(this.Res) this.Set_state({ prop : 'dialog_filters' , val : false })
 
@@ -1250,14 +1449,14 @@
                         estates(
                             page : 1 ,
                             per_page : ${this.per_page} ,
-                            #ordering : ${this.ordering} ,
+                            ordering : "${this.ordering}" ,
                             ${ this.is_exist(this.office) && !!this.office.id ? `consultant : ${this.office.id} ,` : '' }
                             query : "${this.search}" ,
                             code : "${this.code_estate}" ,
                             landloard_fullname : "${this.owner}" ,
                             landloard_phone_number : "${this.phone_owner}" ,
                             created_at : "${this.to_en(this.date)}" ,
-                            areas : [${this.areas_select.flat()}] ,
+                            areas : [${ this.is_exist(this.areas_select) ? this.areas_select.flat() : [] }] ,
                             ${ this.assignments_select ? `assignment : ${this.assignments_select} ,` : '' }
                             ${ this.estate_types_select ? `estate_type : ${this.estate_types_select} ,` : '' }
                             features : [${this.options_select}] ,
@@ -1277,13 +1476,16 @@
                             rental_price : {
                                 min : "${this.rental_price.min.value}" ,
                                 max : "${this.rental_price.max.value}"
-                            } 
+                            } ,
+                            ${ this.is_assignemnt ? 'is_assignmented : false' : '' }
                         ) {
                             data {
                                 id
                                 code
                                 title
+                                is_active
                                 is_mine
+                                is_favorite
                                 photos {
                                     id
                                     file_name
@@ -1309,6 +1511,7 @@
                                 }
                                 creator {
                                     id
+                                    username
                                     is_public_info
                                     first_name
                                     last_name
@@ -1332,7 +1535,7 @@
                                         icon
                                     }
                                 }
-                                features {
+                                detailable_features {
                                     id
                                     icon
                                     title
@@ -1393,6 +1596,8 @@
                     this.Cansel(el);
                 })
 
+                this.bind_filters = {}
+
                 this.Apply_filters();
 
             } ,
@@ -1420,6 +1625,14 @@
             } ,
 
             set_dynamic_filters() {
+
+                this.$vs.loading({
+                    container: '#filter-bar',
+                    scale: 1 ,
+                    type : 'sound' ,
+                    color : this.web_color
+                })
+
                 this.Set_state({
                     prop : 'dynamic_filters' ,
                     val : {
@@ -1443,6 +1656,8 @@
                                     id
                                     title
                                     filters {
+                                        prefix
+                                        postfix
                                         id
                                         title
                                         defaults {
@@ -1455,17 +1670,36 @@
                         }` ,
                     props : ['estate_type'] ,
                     states : ['dynamic_filters'] ,
-                    is_object : true
+                    is_object : true ,
+                    loading : false ,
+                    changeDataResolver(data) {
+                        data.data.estate_type.features = _.orderBy( data.data.estate_type.features , 'title' , 'asc' );
+                        return data;
+                    } ,
+                    afterResolver : () => {
+                        $(document).ready(function() {
+                            setTimeout(() => {
+                                $('#filter-bar .con-vs-loading').fadeOut();
+                                setTimeout(() => {
+                                    $('#filter-bar .con-vs-loading').remove();
+                                }, 100);
+                            }, 1000);
+                        })
+                    }
                 })
             } ,
 
             display_ranges() {
+
                 let obj = this.assignments.filter( el => el.id == this.assignments_select )[0];
                 if( this.is_exist(obj) ) {
                     this.sales_price.is_active = obj.has_sales_price;
                     this.mortgage_price.is_active = obj.has_mortgage_price;
                     this.rental_price.is_active = obj.has_rental_price;
                 }
+
+                if( this.ordering != 'latest' || this.ordering != 'oldest' ) this.ordering = 'latest'
+
             } ,
 
             set_ranges( state , range , index , val ) {
@@ -1508,6 +1742,8 @@
                     this[state].label = `${label} تا ${prices[1].toLocaleString('fa-IR')} میلیون تومان`;
                 }
 
+                this[state].popover = false;
+
             } ,
 
             filter_area() {
@@ -1525,6 +1761,8 @@
                     this.area.label = `${this.area.default_label} تا ${areas[1].toLocaleString('fa-IR')} متر`;
                 }
 
+                this.area.popover = false;
+
             } ,
 
             Cansel(state) {
@@ -1533,6 +1771,7 @@
                 this[state].min.defaults.map( el => el.disabled = false );
                 this[state].max.value = ''; 
                 this[state].max.defaults.map( el => el.disabled = false );
+                this[state].popover = false;
             } ,
 
             get_all_dynamic_filters() {
@@ -1546,7 +1785,7 @@
                     }
                 })
                 return query;
-            }
+            } ,
 
         }
 
@@ -1555,6 +1794,58 @@
 </script>
 
 <style>
+
+    .con-vs-loading {
+        background: hsla(0, 0%, 100%, 0.95) !important;
+        border-radius: 20px;
+    }
+
+    .checkbox.assign label {
+        font-size: 14px;
+    }
+
+    .v-image__image {
+        transition: filter .3s;
+    }
+
+    .grid-list-btn .el-radio-button__orig-radio:checked+.el-radio-button__inner .v-image__image {
+        filter: invert(1)
+    }
+
+    .mv-25 {
+        max-width: 25% !important;
+    }
+
+    .is_assignemnt .vs-checkbox {
+        margin-left: 10px;
+    }
+
+    .vs-input--placeholder {
+        color: rgba(0,0,0,.6);
+    }
+
+    .dialog_sort .vs-popup {
+        width: 300px !important;
+    }
+
+    .dialog_sort .vs-popup .v-input {
+        justify-content: flex-end;
+    }
+
+    .dialog_sort .v-input__slot {
+        border: unset !important;
+        margin: 0px !important;
+        direction: rtl;
+    }
+
+    .dialog_sort label {
+        margin-bottom: 0px !important;
+        margin-right: 10px !important;
+    }
+
+    .sort-btn .el-select {
+        max-width: 180px;
+    }
 
     .el-cascader {
         overflow: hidden;
@@ -1740,9 +2031,9 @@
         text-align: right;
     }
 
-    .vs-input-primary .vs-input--input:focus {
+    /* .vs-input-primary .vs-input--input:focus {
         border: 1px solid #29B6F6 !important;
-    }
+    } */
 
     .vs-input-primary .vs-input--input:focus~.icon-inputx ,
     .vs-input-primary .vs-input--input:focus~.vs-placeholder-label {
@@ -1806,14 +2097,14 @@
 
     .vs-con-input .material-icons {
         font-size: 19px !important;
-        background: #29B6F6;
+        /* background: #29B6F6; */
         padding: 5px 5px 5px 6px;
         border-radius: 10px;
         left: -10px;
         top: 4px;
         color: #fff !important;
         font-size: 17px;
-        box-shadow: 0px 2px 10px -7px #000, 0px 4px 10px -5px #29B6F6;
+        /* box-shadow: 0px 2px 10px -7px #000, 0px 4px 10px -5px #29B6F6; */
     }
 
     .vs-switch--text .material-icons {
@@ -1853,6 +2144,10 @@
 
 <style scoped>
 
+    .filter-bar div.col-md-2:nth-of-type(n+9) {
+        margin-top: 16px !important;
+    }
+
     .profile-estate.responsive {
         position: absolute;
         background: #fff;
@@ -1863,6 +2158,7 @@
         left: 50%;
         transform: translateX(-50%);
         z-index: 99;
+        box-shadow: 0 2px 12px 0 rgba(0,0,0,0.1) !important;
     }
 
     .profile-estate .username {
@@ -1883,8 +2179,8 @@
         justify-content: center;
         margin: 0;
         position: absolute;
-        bottom: 50%;
-        transform: translateY(50%);
+        top: 60px;
+        z-index: 400000;
         left: -30px;
         box-shadow: 0px -2px 20px -13px #000 !important;
         background: #29B6F6;
@@ -1938,7 +2234,7 @@
         position: relative;
         z-index: 1;
         box-shadow: 0px 10px 50px -35px;
-        transform: translateY(-50%);
+        transform: translateY(-90px);
     }
 
 </style>

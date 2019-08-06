@@ -23,7 +23,8 @@ export default {
 
         //  HH:mm:ss
         to_fa(date) {
-            return moment(date).format('jYYYY/jMM/jDD')
+            return moment(date).format('jYY/jMM/jDD').split('/').reverse()
+            .map( el => el = parseInt(el).toLocaleString('fa-IR') ).join(' / ')
         } ,
 
         //  HH:mm:ss

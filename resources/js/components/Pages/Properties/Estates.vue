@@ -1,6 +1,5 @@
 <template>
-
-    <section class="mt-xs-5" :class="{ 'pt-xs-90' : Res && is_exist($route.params) }">
+    <section>
         <div class="container">
 
             <div class="sec-title mb-xs-5" :class="{ 'justify-content-end' : Res }">
@@ -29,16 +28,16 @@
                 </div>
 
                 <div>
-                    <span class="estates-title"> ... خونه جدیدت رو پیدا کن </span>
+                    <span class="estates-title web-color"> ... خونه جدیدت رو پیدا کن </span>
                     <h2 :class="{ 'fs-20' : Res }"> {{ title || 'ملک های مشهد' }} </h2>
                 </div>
 
             </div>
 
             <div class="filter-btn row justify-content-around" v-if="Res">
-                <div class="col-5">
+                <div class="col-5" @click="Set_state({ prop : 'dialog_sort' , val : true })">
                     <span>
-                        جدید ترین
+                        مرتب سازی
                         <i class="flaticon-stats"></i>
                     </span>
                 </div>
@@ -73,8 +72,8 @@
             <template v-else>
                 <div class="rtl p-5 pt-0 d-flex flex-column justify-content-center align-items-center">
                     <i class="lnr lnr-magnifier fs-100"></i>
-                    <h3 class="mt-4"> متاسفانه ملکی پیدا نشد :( </h3>
-                    <h5 class="mt-3">
+                    <h3 class="mt-4 text-center"> متاسفانه ملکی پیدا نشد :( </h3>
+                    <h5 class="mt-3 text-center">
                         برای دیدن ملک های بیشتر
                         <a :href="$router.resolve({path: '/properties'}).href">اینجا</a>
                         کلیک کنید
@@ -84,7 +83,6 @@
 
         </div>
     </section>
-
 </template>
 
 <script>
@@ -126,8 +124,8 @@
         font-size: 100px;
     }
 
-    .pt-xs-90 {
-        padding-top: 90px !important;
+    .pt-xs-60 {
+        padding-top: 60px !important;
     }
 
     .grid-list-btn .v-image__image {
@@ -135,7 +133,7 @@
     }
 
     .grid-list-btn .el-radio-button__inner {
-        padding: 10px 15px !important;
+        padding: 8.5px 15px !important;
     }
 
     .sort-btn .el-radio-button__inner {
@@ -146,11 +144,11 @@
         color: #222222e0 !important;
     }
     
-    .grid-list-btn .el-radio-button__orig-radio:checked+.el-radio-button__inner {
+    /* .grid-list-btn .el-radio-button__orig-radio:checked+.el-radio-button__inner {
         background-color: #29b6f6 !important;
         border-color: #29b6f6 !important;
         box-shadow: 1px 3px 8px -4px #409EFF, 0px 2px 6px -6px #000 !important;
-    }
+    } */
 
     .sort-btn .el-radio-button__orig-radio:checked+.el-radio-button__inner {
         background-color: #29b6f6 !important;
@@ -165,6 +163,7 @@
     }
 
     .filter-btn div {
+        background: #fff;
         cursor: pointer;
         padding: 1rem;
         box-shadow: 0 2px 8px 0 rgba(0,0,0,.1) !important;

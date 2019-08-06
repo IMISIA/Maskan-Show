@@ -1,6 +1,5 @@
 <template>
-
-    <section class="clients_logo_area p_120 pb-0" v-if="has_offices">
+    <section class="clients_logo_area p_100 pb-0" v-if="has_offices">
         <div class="container">
             <div class="main_title">
                 <h2> املاک های مسکن شو </h2>
@@ -14,8 +13,8 @@
                             </v-avatar>
 
                             <p class="text-center mb-2 mt-2">
-                                {{ office.owner.full_name && office.owner.full_name != " " 
-                                    ? office.owner.full_name 
+                                {{ office.owner && office.owner.full_name && office.owner.full_name != " " 
+                                    ? office.owner.full_name
                                     : 'ناشناس' 
                                     | truncate(20)
                                 }}
@@ -28,7 +27,6 @@
             </div>
         </div>
     </section>
-
 </template>
 
 <script>
@@ -38,7 +36,6 @@
     export default {
 
         computed : {
-
             ...mapState([
                 'offices' ,
                 'url'
@@ -55,6 +52,7 @@
                             autoplay: false,
                             smartSpeed: 1500,
                             dots:false, 
+                            loop : true,
                             responsiveClass: true,
                             responsive: {
                                 0: {
@@ -78,7 +76,6 @@
                 }
                 return !_.isEmpty(this.offices)
             }
-
         }
 
     }
@@ -98,12 +95,12 @@
 
     .item .office {
         border-radius: 7px;
-        transition: box-shadow 0.5s;
+        transition: all 0.3s;
     }
 
     .item .office:hover {
-        /* box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1); */
         box-shadow: 0 5px 10px -8px #00bcd421, 0 6px 25px -12px rgba(0,0,0,.1) !important;
+        background: #fff;
     }
 
 </style>

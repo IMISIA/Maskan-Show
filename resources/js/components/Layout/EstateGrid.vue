@@ -13,6 +13,11 @@
                         {{ estate.assignment.title +' '+ estate.estate_type.title }}
                     </div>
 
+                    <div class="bookmark" @click.prevent="add_fav">
+                        <img v-if="!is_fav" src="/img/bookmark.svg">
+                        <img v-else src="/img/bookmark-fill.svg">
+                    </div>
+
                     <div class="room-info text-left d-flex as-info pt-0">
                         <div class="w-50">
                             <el-tooltip
@@ -29,7 +34,7 @@
                             </el-tooltip>
                         </div>
                         <div class="w-50 text-right mr-0 ml-1 rtl">
-                            <p><i class="fa fa-clock-o"></i> {{ estate.created_at | to_fa }} </p>
+                            <p><i class="fa fa-clock"></i> {{ estate.created_at | to_fa }} </p>
                         </div>	
                     </div>
 
@@ -38,6 +43,14 @@
                 <div class="assignmented" v-if="!!estate.assignmented_at">
                     <div>
                         <span class="stamp is-nope"> واگذار شده </span>
+                    </div>
+                </div>
+
+                <div class="assignmented" v-else-if="!estate.is_active">
+                    <div>
+                        <span class="stamp is-nope">
+                            تایید نشده
+                        </span>
                     </div>
                 </div>
 
@@ -52,98 +65,116 @@
                 
             </router-link>
 
-            <div class="feature-text">
+            <router-link :to=" 'estate/' + estate.id ">
+                <div class="feature-text">
 
-                <div class="text-center feature-title rtl">
-                    <router-link :to=" 'estate/' + estate.id ">
-                            <h5 class="bold"> 
-                                <span class="web-color"> {{ '#'+ ( this.$route.params.username && estate.code ? estate.code : estate.id ) }} </span>
-                                {{ ( !!estate.title ? estate.title : '' ||
-                                    !!estate.assignment ? estate.assignment.title : '' +' '+
-                                    !!estate.estate_type ? estate.estate_type.title : '' +' '+
-                                    `${(estate.area).toLocaleString('fa-IR')} متری` )
-                                    | truncate( 30 - estate.id.toString().length ) }}
-                            </h5>
-                    </router-link>
-                    <p class="text-muted fs-12 rtl mt-2 bold">
-                        <i class="fa fa-map-marker fs-15 ml-1"></i>
-                        {{  ( estate.street && estate.street.area ? estate.street.area.name +' ، ' : '' ) +
-                            ( estate.street ? estate.street.name +' ، ' : '' ) +
-                            estate.address | truncate(45)
-                        }}
-                    </p>
-                </div>
-
-                <div class="room-info-warp rtl text-right">
-                    <div class="row room-info">
-                        <template v-if="is_exist(estate.specifications)">
-                            <template v-for="spec in estate.specifications.slice(0,4)">
-                                <div class="col-6" v-if="is_exist(spec.data) || is_exist(spec.values)" :key="spec.id">
-                                    <p class="hvr-icon-back">
-                                        <i class="fa fa-building-o hvr-icon"></i>
-                                        <template v-if="is_exist(spec.values)">
-                                            {{ join_props(
-                                                spec.values ,
-                                                spec.row ? spec.row.prefix : '' ,
-                                                spec.row ? spec.row.postfix : '' )
-                                                | truncate(15)
-                                            }}
-                                        </template>
-                                        <template v-else-if="is_exist(spec.data) && is_json(spec.data)">
-                                            {{ 
-                                                join_props( Json_parse(spec.data) ,
-                                                spec.row ? spec.row.prefix : '' ,
-                                                spec.row ? spec.row.postfix : '' )
-                                                | truncate(15)
-                                            }}
-                                        </template>
-                                        <template v-else-if="is_exist(spec.data) && !is_json(spec.data)">
-                                            {{ 
-                                                (spec.row ? spec.row.prefix +' ' : '') +
-                                                spec.data +' '+
-                                                spec.row ? spec.row.postfix : ''
-                                                | truncate(15)
-                                            }}
-                                        </template>
-                                    </p>
-                                </div>
-                            </template>
-                        </template>
+                    <div class="text-center feature-title rtl">
+                        <router-link :to=" 'estate/' + estate.id ">
+                                <h5 class="bold"> 
+                                    <span class="web-color"> {{ '#'+ ( this.$route.params.username && estate.code ? estate.code : estate.id ) }} </span>
+                                    {{ ( !!estate.title ? estate.title : '' ||
+                                        (!!estate.assignment ? estate.assignment.title +' ' : '') +
+                                        (!!estate.estate_type ? estate.estate_type.title +' ' : '') +
+                                        `${(estate.area).toLocaleString('fa-IR')} متری` )
+                                        | truncate( 30 - ( this.$route.params.username && estate.code ? estate.code : estate.id ).toString().length )
+                                    }}
+                                </h5>
+                        </router-link>
+                        <p class="text-muted fs-12 rtl mt-2 bold">
+                            <i class="fa fa-map-marker-alt fs-15 ml-1 web-color"></i>
+                            {{  ( estate.street && estate.street.area ? estate.street.area.name +' ، ' : '' ) +
+                                ( estate.street ? 'خیابان ' + estate.street.name +' ، ' : '' ) +
+                                estate.address | truncate(45)
+                            }}
+                        </p>
                     </div>
-                </div>
 
-                <div class="property-price clearfix">
-                    <div class="read-more rtl">
-                        <div class="theme-btn">
+                    <div class="room-info-warp rtl text-right">
+                        <div class="row room-info">
 
-                            <div v-if="assignment.has_sales_price">
-                                {{ estate.sales_price | price }}
-                                <span class="fs-12 pr-1 normal"> {{ label_price(estate.sales_price) }} </span>
-                            </div>
-                            <div class="d-flex" v-else-if="assignment.has_mortgage_price && assignment.has_rental_price">
-                                <div>
-                                    {{ estate.mortgage_price | multi_price }}
-                                    <span class="fs-12 normal"> {{ label_multi_price(estate.mortgage_price) }} رهن </span>
-                                </div>
-                                <span class="mx-2"></span>
-                                <div>
-                                    {{ estate.rental_price | multi_price }}
-                                    <span class="fs-12 normal"> {{ label_multi_price(estate.rental_price) }} اجاره </span>
-                                </div>
-                            </div>
-                            <div v-else>
-                                {{ ( assignment.has_mortgage_price ? estate.mortgage_price : estate.rental_price) | price }}
-                                <span class="fs-12 pr-1 normal">
-                                    {{ label_price( assignment.has_mortgage_price ? estate.mortgage_price : estate.rental_price) }}
-                                </span>
-                            </div>
+                            <template v-if="is_exist(estate.specifications)">
+                                <template
+                                    v-for="(spec,idx) in estate.specifications.slice( 0 , estate.specifications.length >= 4 ? 4 : estate.specifications.length )">
+                                    <div class="col-6"
+                                        v-if=" ( is_exist(spec.data) && spec.data != '[]' ) || is_exist(spec.values) " :key="idx+'spec'">
+                                        <p class="hvr-icon-back">
+                                            <i :class="`fa fa-${ spec.row && spec.row.icon ? spec.row.icon : 'building' } hvr-icon web-color`"></i>
+                                            <template v-if="is_exist(spec.values)">
+                                                {{ join_props(
+                                                    spec.values ,
+                                                    spec.row ? spec.row.prefix : '' ,
+                                                    spec.row ? spec.row.postfix : '' )
+                                                    | truncate(15)
+                                                }}
+                                            </template>
+                                            <template v-else-if="is_exist(spec.data) && is_json(spec.data)">
+                                                {{ 
+                                                    join_props( Json_parse(spec.data) ,
+                                                    spec.row ? spec.row.prefix : '' ,
+                                                    spec.row ? spec.row.postfix : '' )
+                                                    | truncate(15)
+                                                }}
+                                            </template>
+                                            <template v-else-if="is_exist(spec.data)">
+                                                {{ 
+                                                    ( spec.row ? spec.row.prefix +' ' : '' ) +
+                                                    spec.data +' '+
+                                                    ( spec.row ? spec.row.postfix : '' )
+                                                    | truncate(15)
+                                                }}
+                                            </template>
+                                        </p>
+                                    </div>
+                                </template>
+                            </template>
+
+                            <template v-if="is_exist(estate.detailable_features)">
+                                <template v-for="(feature,idx) in estate.detailable_features.slice( 0 , slice_features )">
+                                    <div class="col-6" v-if="is_exist(feature.title)" :key="idx+'feature'">
+                                        <p class="hvr-icon-back">
+                                            <i :class="`fa fa-${ feature.icon || 'building' } hvr-icon web-color`"></i>
+                                            {{ feature.title | truncate(15) }}
+                                        </p>
+                                    </div>
+                                </template>
+                            </template>
 
                         </div>
                     </div>
-                    <div class="price rtl"> {{ (estate.area).toLocaleString('fa-IR') }} متری </div>
-                </div>
 
-            </div>
+                    <div class="property-price clearfix">
+                        <div class="read-more rtl">
+                            <div class="theme-btn">
+
+                                <div v-if="assignment.has_sales_price">
+                                    {{ estate.sales_price | price }}
+                                    <span class="fs-12 pr-1 normal"> {{ label_price(estate.sales_price) }} </span>
+                                </div>
+                                <div class="d-flex" v-else-if="assignment.has_mortgage_price && assignment.has_rental_price">
+                                    <div>
+                                        {{ estate.mortgage_price | multi_price }}
+                                        <span class="fs-12 normal"> {{ label_multi_price(estate.mortgage_price) }} رهن </span>
+                                    </div>
+                                    <span class="mx-2"></span>
+                                    <div>
+                                        {{ estate.rental_price | multi_price }}
+                                        <span class="fs-12 normal"> {{ label_multi_price(estate.rental_price) }} اجاره </span>
+                                    </div>
+                                </div>
+                                <div v-else>
+                                    {{ ( assignment.has_mortgage_price ? estate.mortgage_price : estate.rental_price) | price }}
+                                    <span class="fs-12 pr-1 normal">
+                                        {{ label_price( assignment.has_mortgage_price ? estate.mortgage_price : estate.rental_price) }}
+                                    </span>
+                                </div>
+
+                            </div>
+                        </div>
+                        <div class="price rtl"> {{ (estate.area).toLocaleString('fa-IR') }} متری </div>
+                    </div>
+
+                </div>
+            </router-link>
 
         </div>
     </el-card>
@@ -201,7 +232,9 @@
 
             ...mapState([
                 'assignments' ,
-                'url'
+                'url' ,
+                'Auth' ,
+                'req_url'
             ]) ,
 
             assignment() {
@@ -231,11 +264,86 @@
                     { src : this.estate.photos[0].medium , has_img : true } : { src : '/img/default.jpg' , has_img : false }
             } ,
 
+            is_fav() {
+                if(this.is_exist(this.estate)) {
+                    return this.estate.is_favorite;
+                } else {
+                    return false;
+                }
+            } ,
+
+            slice_features() {
+
+                let valid_spec = this.estate.specifications
+                .filter( el => ( this.is_exist(el.data) && el.data != '[]' ) || this.is_exist(el.values) );
+
+                if( this.is_exist(this.estate.specifications) ) {
+                    return valid_spec.length >= 4 ? 0 : 4 - valid_spec.length;
+                } else {
+                    return this.estate.detailable_features.length >= 4 ? 4 : this.estate.detailable_features.length;
+                }
+            }
+
         } ,
 
         methods : {
 
+            add_fav() {
+                if(!this.Auth) {
+
+                    this.notif( 'کاربر گرامی ، برای ثبت علاقه مندی‌ها ابتدا باید وارد سایت شوید' , 'warning' , 'error' )
+                    return;
+                    
+                } else {
+
+                    let query = `
+                        mutation {
+                            ${ !this.is_fav ? 'addFavorite' : 'removeFavorite' }( estate : "${this.estate.id}" ) {
+                                status
+                                message
+                            }
+                        }
+                    `
+        
+                    axios({
+                        method : 'POST' ,
+                        url : this.req_url ,
+                        data : {
+                            query : query
+                        }
+                    })
+                    .then( ({data}) => {
+                        if( !!data.errors ) {
+                            data.errors.forEach( Err => console.error(Err.message) )
+                        } else {
+                            if( !this.is_fav && data.data.addFavorite.status == 200 ) {
+                                this.notif( data.data.addFavorite.message , 'danger' , 'favorite' );
+                                this.$store.state.Estates.map( (el,idx) => {
+                                    if( el.id == this.estate.id ) {
+                                        this.$store.state.Estates[idx].is_favorite = true;
+                                    }
+                                })
+                            } else if( this.is_fav && data.data.removeFavorite.status == 200 ) {
+                                this.notif( data.data.removeFavorite.message , 'warning' , 'close' );
+                                this.$store.state.Estates.map( (el,idx) => {
+                                    if( el.id == this.estate.id ) {
+                                        this.$store.state.Estates[idx].is_favorite = false;
+                                    }
+                                })
+                            } else {
+                                this.notif( !this.is_fav ? data.data.addFavorite.message : data.data.removeFavorite.message , 'warning' , 'error' );
+                            }
+                        }
+                    })
+                    .catch( Err => console.log( Err ) )
+
+                }
+            } ,
+
             join_props( values , prefix , postfix ) {
+
+                if( typeof values != 'object' ) return [];
+
                 let arr = [];
                 
                 if(!prefix) prefix = '';
@@ -269,6 +377,18 @@
                     return `م`
                 } else if(val > 1000000000) {
                     return `م`
+                }
+            } ,
+
+            Json_parse(val) {
+                return JSON.parse(val)
+            } ,
+
+            is_json(str) {
+                try {
+                    JSON.parse(str);
+                } catch (e) {
+                    return false;
                 }
             } ,
 

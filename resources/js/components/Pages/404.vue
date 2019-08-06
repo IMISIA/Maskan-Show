@@ -22,3 +22,13 @@
     </section>
 
 </template>
+
+<script>
+    export default {
+        metaInfo() {
+            return {
+                title : '404' ,
+            }
+        } ,
+    }
+</script>
