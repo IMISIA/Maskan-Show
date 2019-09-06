@@ -14,8 +14,8 @@
                     </div>
 
                     <div class="bookmark" @click.prevent="add_fav">
-                        <img v-if="!is_fav" src="/img/bookmark.svg">
-                        <img v-else src="/img/bookmark-fill.svg">
+                        <img v-show="!is_fav" src="/img/bookmark.svg">
+                        <img v-show="is_fav" src="/img/bookmark-fill.svg">
                     </div>
 
                     <div class="room-info text-left d-flex as-info pt-0">
@@ -84,7 +84,7 @@
                             <i class="fa fa-map-marker-alt fs-15 ml-1 web-color"></i>
                             {{  ( estate.street && estate.street.area ? estate.street.area.name +' ، ' : '' ) +
                                 ( estate.street ? 'خیابان ' + estate.street.name +' ، ' : '' ) +
-                                estate.address | truncate(45)
+                                estate.address | truncate(40)
                             }}
                         </p>
                     </div>
@@ -96,7 +96,7 @@
                                 <template
                                     v-for="(spec,idx) in estate.specifications.slice( 0 , estate.specifications.length >= 4 ? 4 : estate.specifications.length )">
                                     <div class="col-6"
-                                        v-if=" ( is_exist(spec.data) && spec.data != '[]' ) || is_exist(spec.values) " :key="idx+'spec'">
+                                        v-if=" ( is_exist(spec.data) && spec.data != '[]' || spec.data == '0' ) || is_exist(spec.values) " :key="idx+'spec'">
                                         <p class="hvr-icon-back">
                                             <i :class="`fa fa-${ spec.row && spec.row.icon ? spec.row.icon : 'building' } hvr-icon web-color`"></i>
                                             <template v-if="is_exist(spec.values)">
@@ -115,7 +115,7 @@
                                                     | truncate(15)
                                                 }}
                                             </template>
-                                            <template v-else-if="is_exist(spec.data)">
+                                            <template v-else-if="is_exist(spec.data) || spec.data == '0'">
                                                 {{ 
                                                     ( spec.row ? spec.row.prefix +' ' : '' ) +
                                                     spec.data +' '+
@@ -182,14 +182,22 @@
 
 <script>
 
+    import {
+        Card ,
+        Tooltip
+    } from 'element-ui';
     import mixin from '../../mixin';
     import moment from '../../moment';
     import { mapState } from 'vuex';
 
     export default {
-
         props : ['estate'] ,
         mixins : [mixin,moment] ,
+
+        components: {
+            elCard: Card ,
+            elTooltip: Tooltip
+        } ,
 
         mounted() {
 
@@ -209,7 +217,7 @@
                     return (val/1000).toLocaleString('fa-IR')
                 } else if(val < 1000000000) {
                     return (val/1000000).toLocaleString('fa-IR')
-                } else if(val > 1000000000) {
+                } else if(val >= 1000000000) {
                     return (val/1000000000).toLocaleString('fa-IR')
                 }
             } ,
@@ -221,7 +229,7 @@
                     return (val/1000).toLocaleString('fa-IR')
                 } else if(val < 1000000000) {
                     return parseFloat((val/1000000).toFixed(1)).toLocaleString('fa-IR')
-                } else if(val > 1000000000) {
+                } else if(val >= 1000000000) {
                     return parseFloat((val/1000000000).toFixed(2)).toLocaleString('fa-IR')
                 }
             }
@@ -363,7 +371,7 @@
                     return `هزار تومان`
                 } else if(val < 1000000000) {
                     return `میلیون تومان`
-                } else if(val > 1000000000) {
+                } else if(val >= 1000000000) {
                     return `میلیارد تومان`
                 }
             } ,
@@ -375,7 +383,7 @@
                     return ``
                 } else if(val < 1000000000) {
                     return `م`
-                } else if(val > 1000000000) {
+                } else if(val >= 1000000000) {
                     return `م`
                 }
             } ,
@@ -393,7 +401,6 @@
             } ,
 
         }
-
     }
     
 </script>

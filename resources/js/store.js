@@ -19,8 +19,8 @@ const store = new Vuex.Store({
         access_modal : false ,
 
         Auth : !!window.localStorage.getItem('JWT') ,
-        url : 'http://192.168.1.219' ,
-        req_url : !!window.localStorage.getItem('JWT') ? 'http://192.168.1.219/graphql/auth' : 'http://192.168.1.219/graphql' ,
+        url : 'https://1b73177a.ngrok.io/' ,
+        req_url : !!window.localStorage.getItem('JWT') ? 'https://1b73177a.ngrok.io/graphql/auth' : 'https://1b73177a.ngrok.io/graphql' ,
         
         // User Information
         me : {} ,
@@ -133,7 +133,6 @@ const store = new Vuex.Store({
     } ,
 
     mutations : {
-
         Set_state( state , data ) {
             state[data.prop] = data.val
         } ,
@@ -144,7 +143,6 @@ const store = new Vuex.Store({
 
         // Query - Props - States
         Req_data( state , obj ) {
-
             if(obj.loading !== false) {
                 state.loading = true;
             }
@@ -178,7 +176,7 @@ const store = new Vuex.Store({
                             state[obj.states[index]] = data.data[el].data ? data.data[el].data : data.data[el]
                         }
 
-                        if( data.data[el].total ) {
+                        if( data.data[el].total || data.data[el].total == 0 ) {
                             state.pagination.total = data.data[el].total
                         }
     
@@ -200,9 +198,7 @@ const store = new Vuex.Store({
                     console.error(Err);
                 }
             })
-
         }
-
     }
 
 });

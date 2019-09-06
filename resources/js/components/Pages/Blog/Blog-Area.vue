@@ -3,7 +3,6 @@
         <section class="blog_area">
             <div class="container">
                 <div class="row">
-                    
                     <!-- Articles -->
                     <div class="col-lg-8">
 
@@ -120,7 +119,6 @@
                     <div class="col-lg-4">
                         <Blog-Sidebar :Req="Req"></Blog-Sidebar>
                     </div>
-
                 </div>
             </div>
         </section>
@@ -128,19 +126,30 @@
 </template>
 
 <script>
-
+    import {
+        VImg ,
+        VBtn
+    } from 'vuetify/lib';
+    import { Card } from 'element-ui';
     import { mapState , mapMutations } from 'vuex';
     import mixin from '../../../mixin';
     import moment from '../../../moment';
+    import BlogSidebar from './Blog_Sidebar.vue';
 
     export default {
-
         mixins : [mixin,moment] ,
 
         metaInfo() {
             return {
                 title : 'وبلاگ ها' ,
             }
+        } ,
+
+        components: {
+            BlogSidebar ,
+            elCard: Card ,
+            VImg ,
+            VBtn
         } ,
     
         created() {
@@ -244,7 +253,6 @@
             }
 
         }
-    
     }
 </script>
 

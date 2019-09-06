@@ -66,7 +66,7 @@ export default {
             if( !!val && typeof val == 'number' ) {
                 return true;
             } else {
-                return !(_.isEmpty(val));
+                return typeof val === 'string' ? !(_.isEmpty(val.trim())) : !(_.isEmpty(val)); 
             }
         } ,
 
@@ -84,7 +84,6 @@ export default {
             return _.random( min , max , floating );
         }
 
-    } ,
-
+    }
 
 }

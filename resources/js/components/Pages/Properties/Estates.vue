@@ -3,7 +3,6 @@
         <div class="container">
 
             <div class="sec-title mb-xs-5" :class="{ 'justify-content-end' : Res }">
-
                 <div class="d-flex">
                     <div class="d-flex align-items-center grid-list-btn" v-if="!Res">
                         <el-radio-group v-model="grid_list">
@@ -31,10 +30,9 @@
                     <span class="estates-title web-color"> ... خونه جدیدت رو پیدا کن </span>
                     <h2 :class="{ 'fs-20' : Res }"> {{ title || 'ملک های مشهد' }} </h2>
                 </div>
-
             </div>
 
-            <div class="filter-btn row justify-content-around" v-if="Res">
+            <div class="filter-btn row justify-content-around" v-show="Res">
                 <div class="col-5" @click="Set_state({ prop : 'dialog_sort' , val : true })">
                     <span>
                         مرتب سازی
@@ -52,7 +50,7 @@
             <template v-if="is_exist(Estates)">
                 <transition name="fade" mode="in-out">
                     <!-- Estates Grid -->
-                    <div class="row rtl" v-if="grid_list || Res ">
+                    <div class="row rtl" v-show="grid_list || Res">
                         <div class="col-lg-4 col-md-6 ltr" v-for="(estate,index) in Estates" :key="index">
                             <Estate-Grid :estate="estate"></Estate-Grid>
                         </div>
@@ -61,7 +59,7 @@
 
                 <transition name="fade" mode="in-out">
                     <!-- Estates List -->
-                    <div class="row list-estate" v-if=" !grid_list && !Res ">
+                    <div class="row list-estate" v-show="!grid_list && !Res">
                         <div class="col-lg-12" v-for="(estate,index) in Estates" :key="index">
                             <Estate-List :estate="estate"></Estate-List>
                         </div>
@@ -75,7 +73,9 @@
                     <h3 class="mt-4 text-center"> متاسفانه ملکی پیدا نشد :( </h3>
                     <h5 class="mt-3 text-center">
                         برای دیدن ملک های بیشتر
-                        <a :href="$router.resolve({path: '/properties'}).href">اینجا</a>
+                        <a :href=" $route.params.username && this.is_exist($route.query)
+                        ? $router.resolve({ path: '/'+$route.params.username }).href
+                        : $router.resolve({path: '/properties'}).href ">اینجا</a>
                         کلیک کنید
                     </h5>
                 </div>
@@ -87,13 +87,29 @@
 
 <script>
 
+    import {
+        VImg
+    } from 'vuetify/lib';
+    import {
+        RadioGroup ,
+        RadioButton
+    } from 'element-ui';
     import { mapState , mapMutations } from 'vuex';
     import mixin from '../../../mixin';
+    import EstateGrid from '../../Layout/EstateGrid.vue';
+    import EstateList from '../../Layout/EstateList.vue';
 
     export default {
-
         props: ['title'] ,
         mixins: [mixin] ,
+
+        components: {
+            EstateList ,
+            EstateGrid ,
+            elRadioGroup: RadioGroup ,
+            elRadioButton: RadioButton ,
+            VImg
+        } ,
 
         data() {
             return {
@@ -113,9 +129,7 @@
                 'Set_state'
             ])
         }
-
     }
-
 </script>
 
 <style>
@@ -124,8 +138,8 @@
         font-size: 100px;
     }
 
-    .pt-xs-60 {
-        padding-top: 60px !important;
+    .pt-xs-85 {
+        padding-top: 85px !important;
     }
 
     .grid-list-btn .v-image__image {

@@ -1,6 +1,5 @@
 <template>
     <div>
-
         <!--================Blog Area =================-->
         <section class="blog_area single-post-area section_gap pt-5">
             <div class="container">
@@ -40,7 +39,7 @@
                                                 <span class="rtl"> {{ single_article.created_at | ago }} </span>
                                                 <i class="flaticon-calendar"></i>
                                             </li>
-                                            <li v-if="!Res">
+                                            <li v-show="!Res">
                                                 <span> {{ single_article.reading_time }} دقیقه </span>
                                                 <i class="flaticon-clock"></i>
                                             </li>
@@ -49,7 +48,7 @@
                                                 <i class="lnr lnr-bubble"></i>
                                             </li>
                                         </ul>
-                                        <ul class="blog_meta list rtl" v-if="Res">
+                                        <ul class="blog_meta list rtl" v-show="Res">
                                             <li>
                                                 <span> {{ single_article.reading_time }} دقیقه </span>
                                                 <i class="flaticon-clock"></i>
@@ -289,15 +288,30 @@
                 </v-dialog>
             </v-layout>
         </v-app>
-
     </div>
 </template>
 
 <script>
-
+    import {
+        VImg ,
+        VTextField ,
+        VTextarea ,
+        VBtn ,
+        VDialog ,
+        VLayout ,
+        VCard ,
+        VForm ,
+        VContainer ,
+        VCardTitle ,
+        VCardText ,
+        VCardActions ,
+        VSpacer
+    } from 'vuetify/lib';
+    import { Button } from 'element-ui';
     import { mapState , mapMutations } from 'vuex';
     import mixin from '../../mixin';
     import moment from '../../moment';
+    import BlogSidebar from './Blog/Blog_Sidebar.vue';
 
     export default {
 
@@ -307,6 +321,24 @@
             return {
                 title : this.single_article.title ,
             }
+        } ,
+
+        components: {
+            BlogSidebar ,
+            elButton: Button ,
+            VImg ,
+            VTextField ,
+            VTextarea ,
+            VBtn ,
+            VDialog ,
+            VLayout ,
+            VCard ,
+            VForm ,
+            VContainer ,
+            VCardTitle ,
+            VCardText ,
+            VCardActions ,
+            VSpacer
         } ,
 
         created() {

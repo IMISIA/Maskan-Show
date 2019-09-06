@@ -1,5 +1,5 @@
 <template>
-	<section class="gallery-section p_100" v-if="is_exist(siteSetting.posters)">
+	<section class="gallery-section py-5" v-if="is_exist(siteSetting.posters)">
 		<div class="container">
 			<div class="main_title">
 				<h2> شهر های پرطرفدار </h2>

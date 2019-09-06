@@ -27,11 +27,16 @@
 </template>
 
 <script>
-
+    import {
+        VAvatar
+    } from 'vuetify/lib';
     import { mapState } from 'vuex';
     import mixin from '../../../mixin';
 
     export default {
+        components: {
+            VAvatar
+        } ,
 
         mixins : [mixin] ,
 

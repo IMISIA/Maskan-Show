@@ -1,10 +1,9 @@
 <template>
-
-    <section class="feature_area p_120">
+    <section class="feature_area py-5">
         <div class="container">
             <div class="main_title">
                 <h2> چرا ما بهترینیم ؟ </h2>
-                <p>. لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است</p>
+                <p> لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است</p>
             </div>
             <div class="row feature_inner">
                 <div class="col-lg-4 col-md-6">
@@ -46,5 +45,4 @@
             </div>
         </div>
     </section>
-
 </template>

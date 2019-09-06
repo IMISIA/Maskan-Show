@@ -15,7 +15,7 @@
             </div>
         </div>
 
-        <div class="container banner-items">
+        <div class="container banner-items" :class="{ 'mv-100' : Res }">
             <div class="advanced_search">
                 <div class="mt-30">
                     <div class="row col-lg-10 m-auto d-flex">
@@ -324,6 +324,10 @@
 </style>
 
 <style>
+
+    .mv-100 {
+        max-width: 100% !important;
+    }
 
     svg path {
         fill: #3d3d3d;

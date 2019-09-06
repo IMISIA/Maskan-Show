@@ -1,19 +1,18 @@
 <template>
     <div class="parent_header_area"> 
-
         <header class="header_area">
             <div class="main_menu as-shadow">
                 <nav class="navbar navbar-expand-lg navbar-light">
                     <div class="container box_1620">
 
                         <!-- Brand and toggle get grouped for better mobile display -->
-                        <router-link class="navbar-brand logo_h" to="/" v-if="Res">
+                        <router-link class="navbar-brand logo_h" to="/" v-show="Res">
                             <img class="logo-site res" src="/img/logo.svg" alt="logo">
                         </router-link>
 
-                        <div v-if="!Res">
+                        <div v-show="!Res">
                             <div v-if="is_exist(me)">
-                                <vs-dropdown vs-custom-content vs-trigger-click >
+                                <vs-dropdown vs-custom-content vs-trigger-click>
                                     
                                     <vs-button class="user-full-name" :color="web_color" icon="expand_more" line-origin="right" type="line">
                                         {{ me.full_name.trim() || me.username || me.email }}
@@ -107,7 +106,7 @@
                         </div> 
 
                         <!-- Brand and toggle get grouped for better mobile display -->
-                        <router-link class="navbar-brand logo_h" to="/" v-if="!Res">
+                        <router-link class="navbar-brand logo_h" to="/" v-show="!Res">
                             <img class="logo-site" src="/img/logo.svg" alt="logo">
                         </router-link>
 
@@ -119,7 +118,6 @@
         <!-- Navigation Drawer -->
         <v-app>
             <v-navigation-drawer class="drawer-res" :dark="false" v-model="drawer" fixed temporary>
-
                 <div class="p-2 text-center">
 
                     <template v-if="is_exist(me)">
@@ -212,20 +210,45 @@
                 <div v-else class="login-drawer">
                     <v-btn :color="web_color" dark round @click="open_modal"> ورود / ثبت نام </v-btn>
                 </div>
-
             </v-navigation-drawer>
         </v-app>
-
     </div>
 </template>
 
 <script>
     import { mapState , mapMutations } from 'vuex';
+    import {
+        // VApp ,
+        VBtn ,
+        VIcon ,
+        VAvatar ,
+        VList ,
+        VListTile ,
+        VListTileTitle ,
+        VListTileContent ,
+        VListTileAction ,
+        VNavigationDrawer ,
+        VDivider
+    } from 'vuetify/lib';
     import mixin from '../../mixin';
 
     export default {
 
         mixins : [mixin] ,
+
+        components: {
+            // VApp ,
+            VBtn ,
+            VIcon ,
+            VAvatar ,
+            VList ,
+            VListTile ,
+            VListTileTitle ,
+            VListTileContent ,
+            VListTileAction ,
+            VNavigationDrawer ,
+            VDivider
+        } ,
     
         mounted() {
             $(document).ready(function() {

@@ -6,66 +6,14 @@
             <div class="banner_inner d-flex align-items-center">
                 <div class="overlay bg-parallax" data-stellar-ratio="0.9" data-stellar-vertical-offset="0"
                     data-background=""></div>
-
-                <!-- Office Estate Information ( PC Mode ) -->
-                <div class="container mb-5 pb-5 profile-estate" v-if=" !Res && username_clt && is_exist(office) ">
-                    <div class="row rtl">
-
-                        <div class="col-md-2 d-flex justify-content-center align-items-center">
-                            <qrcode class="rounded flex-unset" :value="`http://maskanshow.ir/${office.name}`"
-                                :options="{ width: 100 }">
-                            </qrcode>
-                        </div>
-
-                        <div class="col-md-4 text-right d-flex justify-content-around align-items-center">
-                            <div>
-
-                                <div class="username mb-3"> {{ office.name }} </div>
-
-                                <p class="mb-2 text-right">
-                                    <i class="fa fa-map-marker-alt ml-2 fs-20 bold web-color"></i>
-                                    {{  ( office.area && office.area.name ? office.area.name +' ، ' : '' ) + office.address }}
-                                </p>
-
-                                <p class="mb-2 text-right" v-if="office.phone_number">
-                                    <i class="fa fa-phone ml-2 fs-20 bold web-color"></i>
-                                    {{ office.phone_number }}
-                                </p>
-
-                            </div>
-                        </div>
-
-                        <div class="col-md-4 text-right d-flex justify-content-around">
-                            <div>
-                                <p class="mb-0 text-right" v-if="office.description">
-                                    <i class="fa fa-book ml-2 fs-20 bold web-color"></i>
-                                    {{ office.description }}
-                                </p>
-                            </div>
-                        </div>
-
-                        <div class="col-md-2 text-left">
-                            <v-avatar
-                                color="teal"
-                                :size="130">
-                                <img
-                                    :src=" is_exist(office.owner) && office.owner.avatar ? url + office.owner.avatar.medium : '/img/user.png' "
-                                    :alt="office.name">
-                            </v-avatar>
-                        </div>
-
-                    </div>
-                </div>
-
                 <!-- Breadcrumbs -->
-                <div class="container mb-5 pb-5 rtl" v-if="!username_clt && !is_exist(office) ">
+                <div class="container mb-5 pb-5 rtl" v-if="!(Res && username_clt && is_exist(office))">
                     <v-breadcrumbs :items="Breadcrumb">
                         <template v-slot:divider>
                             <v-icon>chevron_left</v-icon>
                         </template>
                     </v-breadcrumbs>
                 </div>
-
             </div>
         </section>
 
@@ -73,7 +21,6 @@
         <div class="profile-estate responsive" v-if=" Res && username_clt && is_exist(office) ">
             <div class="container">
                 <div class="row rtl">
-
                     <div class="col-md-2 text-center">
                         <v-avatar
                             color="teal"
@@ -86,28 +33,34 @@
 
                     <div class="col-md-10 text-center d-flex flex-column justify-content-around mt-xs-4">
 
-                        <div class="username"> {{ office.name }} </div>
+                        <div class="username"> {{ 'املاک ' + office.name }} </div>
 
                         <p class="mt-3 mb-0 text-center">
-                            <i class="fa fa-map-marker-alt ml-2 fs-20 bold web-color"></i>
+                            <i class="fa fa-user ml-2 bold web-color"></i>
+                            {{ office.owner && office.owner.full_name ? office.owner.full_name : '' }}
+                        </p>
+
+                        <p class="mt-1 mb-0 text-center">
+                            <i class="fa fa-map-marker-alt ml-2 bold web-color"></i>
                             {{  ( office.area && office.area.name ? office.area.name +' ، ' : '' ) + office.address }}
                         </p>
 
                         <p class="mt-1 mb-0 text-center">
-                            <i class="fa fa-phone ml-2 fs-20 bold web-color"></i>
-                            {{ office.phone_number }}
+                            <i class="fa fa-phone ml-2 bold web-color"></i>
+                            <a class="text-reset" :href="`tel:${office.phone_number}`">
+                                {{ office.phone_number }}
+                            </a>
                         </p>
 
                     </div>
-
                 </div>
             </div>
         </div>
 
-        <div class="mt-5 px-5" :class="{ 'pt-xs-60 py-4' : Res && is_exist($route.params) }">
+        <div class="mt-5 px-5" :class="{ 'pt-xs-85 py-4' : Res && is_exist($route.params) }">
             <template v-if=" Res && username_clt && is_exist(office) && office.description ">
                 <div class="text-center">
-                    <qrcode class="rounded flex-unset" :value="`http://maskanshow.ir/${office.name}`"
+                    <qrcode class="rounded flex-unset" :value="`http://maskanshow.ir/${office.username}`"
                         :options="{ width: 100 }">
                     </qrcode>                
                 </div>
@@ -120,7 +73,7 @@
         </div>
 
         <!-- Filter Bar ( PC Mode ) -->
-        <div class="container filter-bar" v-if="!Res">
+        <div class="container filter-bar as-shadow" v-show="!Res">
             <div class="row rtl p-5" id="filter-bar" ref="filterBar">
 
                 <div class="as-main-btn hvr-ripple-out" @click="Apply_filters(false)">
@@ -151,7 +104,7 @@
 
                 <!-- Assignments -->
                 <div class="col-md-2">
-                    <el-select v-model="assignments_select" placeholder="نوع واگذاری" clearable @change="display_ranges">
+                    <el-select v-model="assignments_select" placeholder="نوع واگذاری" clearable>
                         <el-option v-for="item in assignments" :key="item.id" :label="item.title" :value="item.id">
                         </el-option>
                     </el-select>
@@ -222,15 +175,23 @@
 
                 <!-- Dynamic Filters -->
                 <div class="col-md-2" v-for="filter in ( dynamic_filters.spec ? dynamic_filters.spec.filters : [] )" :key="filter.id">
-                    <el-select v-model="bind_filters[filter.id]" :placeholder="filter.title" multiple collapse-tags>
-                        <el-option
-                            class="rtl"
-                            v-for="item in filter.defaults"
-                            :key="item.id"
-                            :label="filter.prefix +' '+ item.value +' '+ filter.postfix"
-                            :value="item.id">
-                        </el-option>
-                    </el-select>
+
+                    <template v-if="is_exist(filter.defaults)">
+                        <el-select v-model="bind_filters[filter.id]" :placeholder="filter.title" multiple collapse-tags>
+                            <el-option
+                                class="rtl"
+                                v-for="item in filter.defaults"
+                                :key="item.id"
+                                :label="filter.prefix +' '+ item.value +' '+ filter.postfix"
+                                :value="item.id">
+                            </el-option>
+                        </el-select>
+                    </template>
+
+                    <template v-else>
+                        <vs-input :label-placeholder="filter.title" v-model="bind_filters[filter.id]"/>
+                    </template>
+
                 </div>
 
                 <!-- Estate Options -->
@@ -242,10 +203,10 @@
                         :no-data-text=" estate_types_select ? 'موردی وجود ندارد' : 'نوع ملک انتخاب نشده' "
                         placeholder="امکانات">
                             <el-option
-                            v-for="item in dynamic_filters.features"
-                            :key="item.id"
-                            :label="item.title"
-                            :value="item.id">
+                                v-for="item in dynamic_filters.features"
+                                :key="item.id"
+                                :label="item.title"
+                                :value="item.id">
                             </el-option>
                     </el-select>
                 </div>
@@ -277,7 +238,7 @@
 
                 <transition name="fade" mode="out-in">
                     <!-- Sales Price Input -->
-                    <div class="col-md-2 mt-3" v-if="sales_price.is_active">
+                    <div class="col-md-2 mt-3" v-if="active_ranges.has_sales_price">
                         <el-popover v-model="sales_price.popover" placement="bottom" width="295" trigger="click">
                             
                             <el-button slot="reference" class="btn-range pr-2 w-100 text-right" plain>
@@ -333,7 +294,7 @@
 
                 <transition name="fade" mode="out-in">
                     <!-- Mortgage Price Input -->
-                    <div class="col-md-2 mt-3" v-if="mortgage_price.is_active">
+                    <div class="col-md-2 mt-3" v-if="active_ranges.has_mortgage_price">
                         <el-popover v-model="mortgage_price.popover" placement="bottom" width="295" trigger="click">
                             
                             <el-button slot="reference" class="btn-range pr-2 w-100 text-right" plain>
@@ -389,7 +350,7 @@
 
                 <transition name="fade" mode="out-in">
                     <!-- Rental Price Input -->
-                    <div class="col-md-2 mt-3" v-if="rental_price.is_active">
+                    <div class="col-md-2 mt-3" v-if="active_ranges.has_rental_price">
                         <el-popover v-model="rental_price.popover" placement="bottom" width="295" trigger="click">
                             
                             <el-button slot="reference" class="btn-range pr-2 w-100 text-right" plain>
@@ -446,10 +407,63 @@
             </div>
         </div>
 
+        <!-- Office Estate Information ( PC Mode ) -->
+        <div class="container mb-5 mt-n5 profile-estate as-shadow" v-if=" !Res && username_clt && is_exist(office) ">
+            <div class="row rtl">
+                <div class="col-md-2 text-center">
+                    <v-avatar
+                        color="teal"
+                        :size="130">
+                        <img
+                            :src=" is_exist(office.owner) && office.owner.avatar ? url + office.owner.avatar.medium : '/img/user.png' "
+                            :alt="office.name">
+                    </v-avatar>
+                </div>
+
+                <div class="col-md-4 text-right d-flex justify-content-around align-items-center">
+                    <div>
+                        <div class="username mb-3"> {{ 'املاک ' + office.name }} </div>
+
+                        <p class="mb-2 text-right">
+                            <i class="fa fa-user ml-2 bold web-color"></i>
+                            {{ office.owner && office.owner.full_name ? office.owner.full_name : '' }}
+                        </p>
+
+                        <p class="mb-2 text-right">
+                            <i class="fa fa-map-marker-alt ml-2 bold web-color"></i>
+                            {{  ( office.area && office.area.name ? office.area.name +' ، ' : '' ) + office.address }}
+                        </p>
+
+                        <p class="mb-0 text-right" v-if="office.phone_number">
+                            <i class="fa fa-phone ml-2 bold web-color"></i>
+                            <a class="text-reset" :href="`tel:${office.phone_number}`">
+                                {{ office.phone_number }}
+                            </a>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-md-4 text-right d-flex justify-content-around">
+                    <div>
+                        <p class="mb-0 text-right" v-if="office.description">
+                            <i class="fa fa-book ml-2 fs-20 bold web-color"></i>
+                            {{ office.description }}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-md-2 d-flex justify-content-center align-items-center">
+                    <qrcode class="rounded flex-unset" download :value="`http://maskanshow.ir/${office.username}`"
+                        :options="{ width: 100 }">
+                    </qrcode>
+                </div>
+            </div>
+        </div>
+
         <date-picker v-model="date" element="date-picker"></date-picker>
 
         <!-- Estates Component With Slots -->
-        <Estates :class="{ 'mb-5' : !(total > 1) }" :title="title">
+        <Estates :class="{ 'mb-5' : !(total > 1) , 'mt-n4' : !(username_clt && is_exist(office)) }" :title="title">
             <template #sort>
                 <div class="d-flex align-items-center sort-btn ml-3" v-if="!Res">
                     <div class="rtl">
@@ -477,7 +491,7 @@
         </Estates>
 
         <!-- Pagination -->
-        <div class="properties_area mt-4 pb-0" v-if="total > 1">
+        <div class="properties_area mt-4 pb-0" v-show="total > 1">
             <vs-pagination :color="web_color" :total="total" v-model="page"></vs-pagination>
         </div>
 
@@ -531,7 +545,7 @@
 
                             <!-- Assignments -->
                             <div class="mb-4">
-                                <el-select v-model="assignments_select" placeholder="نوع واگذاری" @change="display_ranges">
+                                <el-select v-model="assignments_select" placeholder="نوع واگذاری">
                                     <el-option v-for="item in assignments" :key="item.id" :label="item.title" :value="item.id">
                                     </el-option>
                                 </el-select>
@@ -573,15 +587,23 @@
 
                             <!-- Dynamic Filters -->
                             <div class="mt-4" v-for="filter in ( dynamic_filters.spec ? dynamic_filters.spec.filters : [] )" :key="filter.id">
-                                <el-select v-model="bind_filters[filter.id]" :placeholder="filter.title" multiple collapse-tags>
-                                    <el-option
-                                        class="rtl"
-                                        v-for="item in filter.defaults"
-                                        :key="item.id"
-                                        :label="filter.prefix +' '+ item.value +' '+ filter.postfix"
-                                        :value="item.id">
-                                    </el-option>
-                                </el-select>
+                                
+                                <template v-if="is_exist(filter.defaults)">
+                                    <el-select v-model="bind_filters[filter.id]" :placeholder="filter.title" multiple collapse-tags>
+                                        <el-option
+                                            class="rtl"
+                                            v-for="item in filter.defaults"
+                                            :key="item.id"
+                                            :label="filter.prefix +' '+ item.value +' '+ filter.postfix"
+                                            :value="item.id">
+                                        </el-option>
+                                    </el-select>
+                                </template>
+
+                                <template v-else>
+                                    <el-input :placeholder="filter.title" v-model="bind_filters[filter.id]"></el-input>
+                                </template>
+
                             </div>
 
                             <!-- Estate Options -->
@@ -602,7 +624,7 @@
                             </div>
 
                             <!-- Sales Price Input -->
-                            <div class="mt-4 ranges" v-if="sales_price.is_active">
+                            <div class="mt-4 ranges" v-if="active_ranges.has_sales_price">
                                 <p class="text-center"> قیمت ملک (تومان) </p>
                                 <div class="d-flex align-items-center mt-2">
                                     <el-input placeholder="حداقل قیمت" type="number" v-model="sales_price.min.value"></el-input>
@@ -612,7 +634,7 @@
                             </div>
 
                             <!-- Mortgage Price Input -->
-                            <div class="mt-4 ranges" v-if="mortgage_price.is_active">
+                            <div class="mt-4 ranges" v-if="active_ranges.has_mortgage_price">
                                 <p class="text-center"> قیمت رهن (تومان) </p>
                                 <div class="d-flex align-items-center">
                                     <el-input placeholder="حداقل رهن" v-model="mortgage_price.min.value"></el-input>
@@ -622,7 +644,7 @@
                             </div>
 
                             <!-- Rental Price Input -->
-                            <div class="mt-4 ranges" v-if="rental_price.is_active">
+                            <div class="mt-4 ranges" v-if="active_ranges.has_rental_price">
                                 <p class="text-center"> قیمت اجاره (تومان) </p>
                                 <div class="d-flex align-items-center">
                                     <el-input placeholder="حداقل اجاره" v-model="rental_price.min.value"></el-input>
@@ -658,19 +680,93 @@
             </v-radio-group>
         </vs-popup>
 
+        <div class="share-btn animated zoomIn" v-if="is_exist(this.$route.query)">
+            <v-speed-dial
+                v-model="fab"
+                direction="top"
+                transition="slide-y-reverse-transition">
+
+                    <template v-slot:activator>
+                        <v-tooltip right>
+                            <template v-slot:activator="{ on }">
+                                <v-btn v-model="fab" v-on="on" color="#484848" small dark fab>
+                                    <v-icon v-if="fab">close</v-icon>
+                                    <v-icon v-else>share</v-icon>
+                                </v-btn>
+                            </template>
+                            <span>اشتراک گذاری این لیست املاک</span>
+                        </v-tooltip>
+                    </template>
+
+                    <social-sharing
+                        :url="`http://maskanshow.ir${$route.fullPath}`"
+                        title="مسکن شو"
+                        :description="`${ (title || 'ملک های مشهد') + ' | مسکن شو' }`"
+                        inline-template>
+                            <network network="telegram">
+                                <v-btn color="#1D93D4" fab dark small>
+                                    <i class="fab fa-telegram-plane fs-18"></i>
+                                </v-btn>
+                            </network>
+                    </social-sharing>
+
+                    <social-sharing
+                        :url="`http://maskanshow.ir${$route.fullPath}`"
+                        title="مسکن شو"
+                        :description="`${ (title || 'ملک های مشهد') + ' | مسکن شو' }`"
+                        inline-template>
+                            <network network="whatsapp">
+                                <v-btn color="#0EE676" fab dark small>
+                                    <i class="fab fa-whatsapp fs-18"></i>
+                                </v-btn>
+                            </network>
+                    </social-sharing>
+
+            </v-speed-dial>
+        </div>
+
     </div>
 </template>
 
 <script>
-
+    import {
+        VBreadcrumbs ,
+        VBtn ,
+        VIcon ,
+        VAvatar ,
+        VList ,
+        VListTile ,
+        VListTileTitle ,
+        VListTileContent ,
+        VListTileAction ,
+        VCheckbox ,
+        VDialog ,
+        VCard ,
+        VCardText ,
+        VRadio ,
+        VSpeedDial ,
+        VTooltip ,
+        VRadioGroup ,
+        VToolbar ,
+        VToolbarTitle ,
+        VSpacer
+    } from 'vuetify/lib';
+    import {
+        Select ,
+        Option ,
+        Popover ,
+        Button ,
+        Cascader ,
+        Input ,
+    } from 'element-ui';
     import { mapState , mapMutations } from 'vuex';
     import mixin from '../../mixin';
     import moment from '../../moment';
+    import Estates from './Properties/Estates.vue';
     import DatetimePicker from 'vue-persian-datetime-picker';
     import qrcode from '@chenfengyuan/vue-qrcode';
 
     export default {
-
         mixins : [mixin,moment] ,
 
         beforeRouteEnter(to, from, next) {
@@ -680,7 +776,7 @@
             next(vm => {
                 vm.prevRoute = from
             })
-        },
+        } ,
 
         metaInfo() {
             return {
@@ -689,14 +785,39 @@
         } ,
 
         components : {
+            Estates ,
             datePicker : DatetimePicker ,
-            qrcode
+            qrcode ,
+            elSelect: Select ,
+            elOption: Option ,
+            elPopover: Popover ,
+            elButton: Button ,
+            elCascader: Cascader ,
+            elInput: Input ,
+            VBreadcrumbs ,
+            VBtn ,
+            VIcon ,
+            VAvatar ,
+            VList ,
+            VListTile ,
+            VListTileTitle ,
+            VListTileContent ,
+            VListTileAction ,
+            VCheckbox ,
+            VDialog ,
+            VCard ,
+            VCardText ,
+            VRadio ,
+            VSpeedDial ,
+            VTooltip ,
+            VRadioGroup ,
+            VToolbar ,
+            VToolbarTitle ,
+            VSpacer
         } ,
         
         created() {
-
             if(this.username_clt) {
-
                 axios({
                     method : 'POST' ,
                     url : this.req_url ,
@@ -707,6 +828,7 @@
                                     id
                                     name
                                     phone_number
+                                    username
                                     area {
                                         name
                                         streets {
@@ -717,6 +839,9 @@
                                     address
                                     description
                                     owner {
+                                        first_name
+                                        last_name
+                                        full_name
                                         avatar {
                                             id 
                                             file_name
@@ -741,7 +866,6 @@
                 .catch( Err => {
                     console.error(Err);
                 })
-
             } else {
 
                 this.Set_state({ prop : 'office' , val : {} })
@@ -750,17 +874,19 @@
             }
 
             this.set_default_filters();
-
         } ,
 
         mounted() {
             $(document).ready(function() {
                 $('.date-picker').find('input').attr( 'id', 'date-picker' );
+                if($(window).width() > 992) $('.bg-parallax').parallax();
             })
         } ,
 
         data() {
             return {
+
+                fab: false,
 
                 bind_filters : {} ,
 
@@ -780,6 +906,7 @@
                 date : '' ,
 
                 ordering : 'latest' ,
+                apply_ordering : true ,
                 is_assignemnt : false ,
 
                 area : {
@@ -836,7 +963,6 @@
                 } ,
 
                 sales_price : {
-                    is_active : false ,
                     popover : false ,
                     min : {
                         value : '' ,
@@ -897,7 +1023,6 @@
                 } ,
                 
                 mortgage_price : {
-                    is_active : false ,
                     popover : false ,
                     min : {
                         value : '' ,
@@ -944,7 +1069,6 @@
                 } ,
 
                 rental_price : {
-                    is_active : false ,
                     popover : false ,
                     min : {
                         value : '' ,
@@ -1011,7 +1135,7 @@
                     areas_select : 'areas' ,
                     assignments_select : 'assignments' ,
                     estate_types_select : 'estate_types' ,
-                    options_select : 'features'
+                    options_select : 'features' ,
                 } ,
 
                 ranges_fields : [
@@ -1021,7 +1145,7 @@
                     'rental_price'   
                 ] ,
 
-                page : 1 ,
+                page : this.$route.query.page && eval(this.$route.query.page) ? eval(this.$route.query.page) : 1 ,
                 per_page : 20 ,
 
             }
@@ -1044,7 +1168,8 @@
 
             custom_estate_types() {
                 if(this.assignments_select) {
-                    return this.assignments.find( el => el.id == this.assignments_select ).estate_types
+                    let obj = this.assignments.find( el => el.id == this.assignments_select ); 
+                    return obj ? obj.estate_types : [];
                 } else {
                     return this.estate_types;
                 }
@@ -1202,6 +1327,15 @@
 
                 return arr;
 
+            } ,
+
+            active_ranges() {
+                let obj = this.assignments.filter( el => el.id == this.assignments_select )[0];
+                if( this.is_exist(obj) ) {
+                    return obj;
+                } else {
+                    return {};
+                }
             }
 
         } ,
@@ -1272,11 +1406,6 @@
 
             } ,
 
-            '$route.query'() {
-                this.set_default_filters();
-                this.Apply_filters(false);
-            } ,
-
             options_select(val) {
                 if( typeof val == 'object' ) {
                     for( let idx in this.options_select ) {
@@ -1289,29 +1418,35 @@
 
             ordering(val) {
                 if(!val) this.ordering = 'latest';
-                this.Apply_filters(false);
+                if(this.apply_ordering) {
+                    this.Apply_filters(false);
+                } else {
+                    this.apply_ordering = true;
+                }
                 this.Set_state({ prop : 'dialog_sort' , val : false });
             } ,
 
             is_assignemnt() {
                 this.Apply_filters(false);
+            } ,
+
+            active_ranges() {
+                if( this.ordering != 'latest' || this.ordering != 'oldest' ) this.ordering = 'latest';
             }
 
         } ,
 
         methods : {
-
             ...mapMutations([
                 'Req_data' ,
                 'Set_state'
             ]) ,
 
             Req_estates() {
-
                 let query = `
                     {
                         estates(
-                            page : 1 ,
+                            page : ${this.$route.query.page && eval(this.$route.query.page) ? eval(this.$route.query.page) : 1} ,
                             per_page : ${this.per_page} ,
                             ${ this.is_exist(this.office) && !!this.office.id ? `consultant : ${this.office.id} ,` : '' }
                             query : "${this.$route.query.query || ''}" ,
@@ -1329,16 +1464,16 @@
                                 max : "${ this.$route.query.area ? this.$route.query.area[1] : ''}"
                             } ,
                             sales_price : {
-                                min : "${ this.$route.query.sales_price ? this.$route.query.sales_price[0] : ''}" ,
-                                max : "${ this.$route.query.sales_price ? this.$route.query.sales_price[1] : ''}"
+                                min : "${ this.$route.query['sales_price[min]'] ? this.$route.query['sales_price[min]'] : ''}" ,
+                                max : "${ this.$route.query['sales_price[max]'] ? this.$route.query['sales_price[max]'] : ''}"
                             } ,
                             mortgage_price : {
-                                min : "${ this.$route.query.mortgage_price ? this.$route.query.mortgage_price[0] : ''}" ,
-                                max : "${ this.$route.query.mortgage_price ? this.$route.query.mortgage_price[1] : ''}"
+                                min : "${ this.$route.query['mortgage_price[min]'] ? this.$route.query['mortgage_price[min]'] : ''}" ,
+                                max : "${ this.$route.query['mortgage_price[max]'] ? this.$route.query['mortgage_price[max]'] : ''}"
                             } ,
                             rental_price : {
-                                min : "${ this.$route.query.mortgage_price ? this.$route.query.rental_price[0] : ''}" ,
-                                max : "${ this.$route.query.mortgage_price ? this.$route.query.rental_price[1] : ''}"
+                                min : "${ this.$route.query['rental_price[min]'] ? this.$route.query['rental_price[min]'] : ''}" ,
+                                max : "${ this.$route.query['rental_price[max]'] ? this.$route.query['rental_price[max]'] : ''}"
                             }
                         ) {
                             data {
@@ -1433,7 +1568,6 @@
             } ,
 
             Apply_filters(watch_page = false) {
-
                 if(!watch_page) {
                     this.page = 1;
                 } else {
@@ -1447,7 +1581,7 @@
                 let query = `
                     {
                         estates(
-                            page : 1 ,
+                            page : ${this.page} ,
                             per_page : ${this.per_page} ,
                             ordering : "${this.ordering}" ,
                             ${ this.is_exist(this.office) && !!this.office.id ? `consultant : ${this.office.id} ,` : '' }
@@ -1571,17 +1705,29 @@
 
                 let query_str = {}
                 
+                query_str.page = this.page;
+
                 Object.keys(this.query_fields).map( el => {
                     if(this.is_exist(this[el])) {
                         query_str[this.query_fields[el]] = this[el] 
                     }
                 })
 
+                this.ranges_fields.map( el => {
+                    if(this[el].min.value || this[el].max.value) {
+                        if(this[el].min.value) query_str[el+'[min]'] = this[el].min.value;
+                        if(this[el].max.value) query_str[el+'[max]'] = this[el].max.value;
+                    } 
+                })
+
+                if(this.is_exist(this.bind_filters)) {
+                    query_str.dynamic_filters = JSON.stringify(this.bind_filters)
+                }
+
                 this.$router.replace({
                     path : this.is_exist(this.$route.params) && !!this.$route.params.username ? '/'+this.$route.params.username : '/properties' ,
                     query : query_str
                 })
-
             } ,
 
             Delete_filters() {
@@ -1596,43 +1742,72 @@
                     this.Cansel(el);
                 })
 
+                this.Set_state({
+                    prop : 'dynamic_filters' ,
+                    val : {
+                        spec : {
+                            filters : []
+                        }
+                    }
+                })
+
                 this.bind_filters = {}
+
+                this.is_assignemnt = false;
+                this.apply_ordering = false;
+                this.ordering = 'latest';
 
                 this.Apply_filters();
 
             } ,
 
             set_default_filters() {
-
                 let query_str = this.$route.query;
 
                 Object.keys(this.query_fields).map( el => {
                     if( el != 'date' && eval(query_str[this.query_fields[el]]) ) {
-                        this[el] = eval(query_str[this.query_fields[el]]) || '';
+                        if( el == 'options_select' || el == 'areas_select' ) {
+                            typeof query_str[this.query_fields[el]] === 'object'
+                            ? this[el] = query_str[this.query_fields[el]]
+                            : this[el].push( eval(query_str[this.query_fields[el]]) )
+                        } else {
+                            this[el] = eval(query_str[this.query_fields[el]]) || '';
+                        }
                     } else {
                         this[el] = query_str[this.query_fields[el]] || '';
                     }
                 })
 
                 this.ranges_fields.map( el => {
-                    this[el].min.value = query_str[el] && query_str[el][0] ? query_str[el][0] : '' 
-                    this[el].max.value = query_str[el] && query_str[el][1] ? query_str[el][1] : '' 
+                    if(query_str[el+'[min]']) {
+                        this[el].min.value = query_str[el+'[min]']; 
+                        this.filter_range( el , this[el].default_label );
+                    }
+                    if(query_str[el+'[max]']) {
+                        this[el].max.value = query_str[el+'[max]']; 
+                        this.filter_range( el , this[el].default_label );
+                    }
                 })
 
                 if(!!this.estate_types_select) this.set_dynamic_filters();
-                if(!!this.assignments_select) this.display_ranges();
+                if( this.is_exist(query_str.dynamic_filters) && JSON.parse(query_str.dynamic_filters) ) {
 
+                    this.bind_filters = { ...this.bind_filters , ...JSON.parse(query_str.dynamic_filters) }
+                }
             } ,
 
             set_dynamic_filters() {
+                let target_loading = document.querySelectorAll('#filter-bar')
+                if(!this.Res && target_loading.length !== 0 ) {
+                    this.$vs.loading({
+                        container: '#filter-bar',
+                        scale: 1 ,
+                        type : 'sound' ,
+                        color : this.web_color
+                    })
+                }
 
-                this.$vs.loading({
-                    container: '#filter-bar',
-                    scale: 1 ,
-                    type : 'sound' ,
-                    color : this.web_color
-                })
-
+                this.bind_filters = {}
                 this.Set_state({
                     prop : 'dynamic_filters' ,
                     val : {
@@ -1672,7 +1847,7 @@
                     states : ['dynamic_filters'] ,
                     is_object : true ,
                     loading : false ,
-                    changeDataResolver(data) {
+                    changeDataResolver: (data) => {
                         data.data.estate_type.features = _.orderBy( data.data.estate_type.features , 'title' , 'asc' );
                         return data;
                     } ,
@@ -1689,29 +1864,16 @@
                 })
             } ,
 
-            display_ranges() {
-
-                let obj = this.assignments.filter( el => el.id == this.assignments_select )[0];
-                if( this.is_exist(obj) ) {
-                    this.sales_price.is_active = obj.has_sales_price;
-                    this.mortgage_price.is_active = obj.has_mortgage_price;
-                    this.rental_price.is_active = obj.has_rental_price;
-                }
-
-                if( this.ordering != 'latest' || this.ordering != 'oldest' ) this.ordering = 'latest'
-
-            } ,
-
             set_ranges( state , range , index , val ) {
                 this[state][range].value = val
                 if(range == 'min') {
                     this[state].max.defaults.map( el => el.disabled = false )
-                    for( let i = index ; i >= 0 ; i-- ) {
+                    if(index) for( let i = index ; i >= 0 ; i-- ) {
                         this[state].max.defaults[i].disabled = true
                     }
                 } else if(range == 'max') {
                     this[state].min.defaults.map( el => el.disabled = false )
-                    for( let j = index ; j < this[state].min.defaults.length ; j++ ) {
+                    if(index) for( let j = index ; j < this[state].min.defaults.length ; j++ ) {
                         this[state].min.defaults[j].disabled = true
                     }
                 }
@@ -1776,24 +1938,38 @@
 
             get_all_dynamic_filters() {
                 let query = '';
-                Object.keys(this.bind_filters).map( el => {
+                Object.keys(this.bind_filters).map( (el,idx) => {
                     if(this.is_exist(this.bind_filters[el])) {
                         query += `{
                             row_id : ${parseInt(el)} ,
-                            values : [${this.bind_filters[el].map( el => parseInt(el) )}]
+                            ${ 
+                                typeof this.bind_filters[el] == 'string'
+                                ? `data : "${this.bind_filters[el]}"`
+                                : `values : [${this.bind_filters[el].map( el => parseInt(el) )}]`
+                            }
+                            
                         }`
                     }
                 })
                 return query;
-            } ,
-
+            }
         }
-
     }
 
 </script>
 
 <style>
+
+    .share-btn {
+        z-index: 200;
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+    }
+
+    .fs-18 {
+        font-size: 18px !important;
+    }
 
     .con-vs-loading {
         background: hsla(0, 0%, 100%, 0.95) !important;
@@ -2148,6 +2324,11 @@
         margin-top: 16px !important;
     }
 
+    .profile-estate {
+        padding: 30px 25px;
+        border-radius: 20px;
+    }
+
     .profile-estate.responsive {
         position: absolute;
         background: #fff;
@@ -2193,6 +2374,7 @@
         -webkit-transition: all 300ms linear 0s;
         -o-transition: all 300ms linear 0s;
     }
+
 
     .as-main-btn.remove-filters {
         width: 45px;

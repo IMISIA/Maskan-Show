@@ -1,6 +1,5 @@
 <template>
     <div>
-
         <!-- label For Assignmented Estate -->
         <div class="container p-5 text-center d-print-none"
             v-if=" is_exist(Single_estate) && ( !!Single_estate.assignmented_at || !Single_estate.is_active || is_exist(Single_estate.label) ) ">
@@ -74,23 +73,18 @@
         <section v-if="is_exist(Single_estate) && is_exist(assignment)">
             <div class="container">
                 <div class="row rtl">
-
                     <!-- Details -->
                     <div class="col-lg-8 single-list-page ltr">
                         <div class="single-list-content as-shadow border-radius">
-
                             <div class="rtl mb-5 list">
-
                                 <div class="row ltr sl-title text-right mb-4">
-
-                                    <div class="col-md-2 text-left mt-n3 ml-n2" v-if="!Res">
+                                    <div class="col-md-2 text-left mt-n3 ml-n2" v-show="!Res">
                                         <qrcode :value="`http://maskanshow.ir/estate/${Single_estate.id}`"
                                             :options="{ width: 80 }">
                                         </qrcode>
                                     </div>
 
                                     <div class="col-md-10 rtl">
-
                                         <h4>
                                             <span class="web-color"> {{ '#'+ Single_estate.id }} </span>
                                             {{ Single_estate.title ||
@@ -107,12 +101,15 @@
                                             }}
                                         </p>
 
-                                        <p class="fs-10 text-danger bold" v-if="!Single_estate.want_cooperation">
-                                            عدم تمایل همکاری با مشاورین املاک
+                                        <p class="fs-10 bold" :class="Single_estate.want_cooperation ? 'text-success' : 'text-danger'"
+                                            v-if="Single_estate.registrar_type && Single_estate.registrar_type.id == 2 || !Single_estate.want_cooperation"> 
+                                            {{
+                                                Single_estate.want_cooperation
+                                                ? 'تمایل همکاری با مشاورین املاک'
+                                                : 'عدم تمایل همکاری با مشاورین املاک'
+                                            }}
                                         </p>
-
                                     </div>
-
                                 </div>
 
                                 <div class="property-price single-estate clearfix mt-2 w-100 p-0">
@@ -125,15 +122,28 @@
                                             </div>
 
                                             <div class="d-flex" v-else-if="assignment.has_mortgage_price && assignment.has_rental_price">
-                                                <div class="text-center">
-                                                    {{ Single_estate.mortgage_price | price }}
-                                                    <span class="fs-12 normal"> {{ label_price(Single_estate.mortgage_price) }} رهن </span>
-                                                </div>
-                                                <span class="mx-3 line-price"> | </span>
-                                                <div class="text-center">
-                                                    {{ Single_estate.rental_price | price }}
-                                                    <span class="fs-12 normal"> {{ label_price(Single_estate.rental_price) }} اجاره </span>
-                                                </div>
+                                                <template v-if="Res">
+                                                    <div>
+                                                        {{ Single_estate.mortgage_price | multi_price }}
+                                                        <span class="fs-12 normal"> {{ label_multi_price(Single_estate.mortgage_price) }} رهن </span>
+                                                    </div>
+                                                    <span class="mx-2"></span>
+                                                    <div>
+                                                        {{ Single_estate.rental_price | multi_price }}
+                                                        <span class="fs-12 normal"> {{ label_multi_price(Single_estate.rental_price) }} اجاره </span>
+                                                    </div> 
+                                                </template>
+                                                <template v-else>
+                                                    <div class="text-center">
+                                                        {{ Single_estate.mortgage_price | price }}
+                                                        <span class="fs-12 normal"> {{ label_price(Single_estate.mortgage_price) }} رهن </span>
+                                                    </div>
+                                                    <span class="mx-3 line-price"> | </span>
+                                                    <div class="text-center">
+                                                        {{ Single_estate.rental_price | price }}
+                                                        <span class="fs-12 normal"> {{ label_price(Single_estate.rental_price) }} اجاره </span>
+                                                    </div>
+                                                </template>
                                             </div>
 
                                             <div v-else>
@@ -147,7 +157,6 @@
                                     </div>
                                     <div class="price rtl"> {{ Single_estate.area | num_to_fa }} متری </div>
                                 </div>
-
                             </div>
 
                             <template v-if="is_exist(Single_estate.spec) && is_exist(Single_estate.spec.headers) ">
@@ -156,9 +165,9 @@
                                         <h3 class="sl-sp-title"> {{ spec.title }} </h3>
                                         <div class="row property-details-list rtl text-right">
                                             <template v-for="item in spec.rows">
-                                                <div class="col-md-4" :key="item.id"
+                                                <div class="col-12 col-md-6 col-xl-4" :key="item.id"
                                                 v-if=" is_exist(item.data)
-                                                ? ( is_exist(item.data.values) || (is_exist(item.data.data) && item.data.data != '[]') )
+                                                ? ( is_exist(item.data.values) || ( item.data.data == '0' || is_exist(item.data.data) && item.data.data != '[]') )
                                                 : false ">
                                                     <p class="hvr-icon-back">
                                                         <i :class="`fa fa-${ item.icon || 'building' } hvr-icon web-color`"></i>
@@ -172,7 +181,7 @@
                                                             {{ join_props( Json_parse(item.data.data) , item.prefix , item.postfix ) }}
                                                         </span>
 
-                                                        <span v-else-if="is_exist(item.data.data)">
+                                                        <span v-else-if="is_exist(item.data.data) || item.data.data == '0'">
                                                             {{ item.prefix +' '+ item.data.data +' '+ item.postfix }}
                                                         </span>
                                                     </p>
@@ -187,7 +196,7 @@
                                 <h3 class="sl-sp-title"> امکانات ملک </h3>
                                 <div class="row property-details-list rtl text-right">
                                     <template v-for="item in asc_features">
-                                        <div class="col-md-4" :key="item.id" v-if="item.title">
+                                        <div class="col-12 col-md-6 col-xl-4" :key="item.id" v-if="item.title">
                                             <p>
                                                 <i :class="`fa fa-${ item.icon || 'building' } hvr-icon web-color`"></i>
                                                 <span class="text-secondary"> {{ item.title }} </span>
@@ -330,13 +339,11 @@
                                     </l-map>
                                 </div>
                             </template>
-
                         </div>
                     </div>
 
                     <!-- sidebar -->
                     <div class="col-lg-4 col-md-12 sidebar ltr">
-
                         <div class="author-card as-shadow border-radius rtl text-center p-4">
                             <div>
 
@@ -356,9 +363,7 @@
                                 </div>
 
                                 <transition @enter="enter">
-
                                     <div class="estate-detail" v-if="show_owner_info && has_owner_info">
-
                                         <div class="row" v-if="Single_estate.landlord_fullname">
                                             <div class="col-5">
                                                 <p class="text-muted fs-12 text-left mb-1"> نام مالک : </p>   
@@ -373,7 +378,9 @@
                                                 <p class="text-muted fs-12 text-left mb-1"> شماره تماس : </p>   
                                             </div>
                                             <div class="col-7">
-                                                <p class="mb-3 text-right"> {{ Single_estate.landlord_phone_number }} </p>
+                                                <a :href="`tel:${Single_estate.landlord_phone_number}`">
+                                                    <p class="mb-3 text-right"> {{ Single_estate.landlord_phone_number }} </p>
+                                                </a>
                                             </div>
                                         </div>
 
@@ -388,11 +395,9 @@
                                                 </p>
                                             </div>
                                         </div>
-
                                     </div>
 
                                     <div class="estate-detail" v-else-if="show_office_info && !has_owner_info && is_exist(Single_estate.office)">
-
                                         <div class="row" v-if="Single_estate.office.name">
                                             <div class="col-5">
                                                 <p class="text-muted fs-12 text-left mb-1"> نام املاک : </p>   
@@ -407,7 +412,9 @@
                                                 <p class="text-muted fs-12 text-left mb-1"> شماره تماس : </p>   
                                             </div>
                                             <div class="col-7">
-                                                <p class="mb-3 text-right"> {{ Single_estate.office.phone_number }} </p>
+                                                <a :href="`tel:${Single_estate.office.phone_number}`">
+                                                    <p class="mb-3 text-right"> {{ Single_estate.office.phone_number }} </p>
+                                                </a>
                                             </div>
                                         </div>
 
@@ -419,9 +426,7 @@
                                                 </p>
                                             </div>
                                         </div>
-                                        
                                     </div>
-
                                 </transition>
 
                                 <div>
@@ -501,7 +506,7 @@
                                     </v-btn>
                                 </div>
 
-                                <div class="mt-4" v-if="Res">
+                                <div class="mt-4" v-show="Res">
                                     <qrcode :value="`http://maskanshow.ir/estate/${Single_estate.id}`"
                                         :options="{ width: 120 }">
                                     </qrcode>
@@ -512,13 +517,12 @@
 
                         <template v-if=" is_exist(Single_estate.street) &&
                                         is_exist(Single_estate.street.area) && is_exist(Single_estate.street.area.offices) ">
-
                             <h5 class="title-last-estate">  املاک اطراف این ملک </h5>
 
                             <div class="row mx-0 author-card as-shadow border-radius rtl text-center"
                                 v-for="office in Single_estate.street.area.offices" :key="office.id">
 
-                                <router-link :to="{ path : '/properties' , query : { consultant : office.username } }" class="col-12 row">
+                                <router-link :to="`/${office.username}`" class="col-12 row">
                                     <div class="col-5">
                                         <v-avatar :size="80" :color="web_color">
                                             <img :src=" office.owner.avatar ? url + office.owner.avatar.small : '/img/user.png' " alt="avatar">
@@ -526,22 +530,24 @@
                                     </div>
 
                                     <div class="col-7 title-info">
-                                        <h5> {{ office.name }} </h5>
-                                        <p class="text-muted fs-12 text-center mb-0"> مشاور املاک </p>
+                                        <h5> {{ 'املاک ' + office.name }} </h5>
+                                        <p class="text-muted fs-12 text-center mb-0">
+                                            {{ office.owner.full_name }}
+                                        </p>
                                     </div>
-
                                 </router-link>
 
-                                <div class="col-12 author-contact border-top mt-4">
-                                    <p class="text-center"><i class="fa fa-phone"></i> {{ office.phone_number }} </p>
-                                    <p class="text-center"><i class="fa fa-map-marker-alt"></i> {{ office.address }} </p>
+                                <div class="col-12 author-contact border-top mt-3">
+                                    <a :href="`tel:${office.phone_number}`">
+                                        <p class="text-center">
+                                            <i class="fa fa-phone web-color"></i> {{ office.phone_number }}
+                                        </p>
+                                    </a>
+                                    <p class="text-center"><i class="fa fa-map-marker-alt web-color"></i> {{ office.address }} </p>
                                 </div>
-
                             </div>
                         </template>
-
                     </div>
-
                 </div>
             </div>
         </section>
@@ -570,17 +576,71 @@
             </div>
         </section>
 
+        <div class="share-btn">
+            <v-speed-dial
+                v-model="fab"
+                direction="top"
+                transition="slide-y-reverse-transition">
+
+                    <template v-slot:activator>
+                        <v-tooltip right>
+                            <template v-slot:activator="{ on }">
+                                <v-btn v-model="fab" v-on="on" color="#484848" small dark fab>
+                                    <v-icon v-if="fab">close</v-icon>
+                                    <v-icon v-else>share</v-icon>
+                                </v-btn>
+                            </template>
+                            <span>اشتراک گذاری این ملک</span>
+                        </v-tooltip>
+                    </template>
+
+                    <social-sharing
+                        :url="`http://maskanshow.ir${$route.fullPath}`"
+                        title="مسکن شو"
+                        :description="`${ is_exist(Breadcrumb) && Breadcrumb[2] ? Breadcrumb[2].text : '' + ' | مسکن شو' }`"
+                        inline-template>
+                            <network network="telegram">
+                                <v-btn color="#1D93D4" fab dark small>
+                                    <i class="fab fa-telegram-plane fs-18"></i>
+                                </v-btn>
+                            </network>
+                    </social-sharing>
+
+                    <social-sharing
+                        :url="`http://maskanshow.ir${$route.fullPath}`"
+                        title="مسکن شو"
+                        :description="`${ is_exist(Breadcrumb) && Breadcrumb[2] ? Breadcrumb[2].text : '' + ' | مسکن شو' }`"
+                        inline-template>
+                            <network network="whatsapp">
+                                <v-btn color="#0EE676" fab dark small>
+                                    <i class="fab fa-whatsapp fs-18"></i>
+                                </v-btn>
+                            </network>
+                    </social-sharing>
+
+            </v-speed-dial>
+        </div>
     </div>
 </template>
 
 <script>
-
+    import {
+        VBreadcrumbs ,
+        VBtn ,
+        VIcon ,
+        VAvatar ,
+        VSpeedDial ,
+        VTooltip
+    } from 'vuetify/lib';
+    import {
+        Popover ,
+        Button
+    } from 'element-ui';
     import {
         mapState ,
         mapMutations
     } from 'vuex';
     import mixin from '../../mixin';
-
     import {
         LMap ,
         LTileLayer ,
@@ -594,7 +654,6 @@
     import qrcode from '@chenfengyuan/vue-qrcode';
 
     export default {
-
         mixins: [mixin] ,
 
         metaInfo() {
@@ -614,7 +673,15 @@
             LControl ,
             LIcon ,
             LTooltip ,
-            qrcode
+            qrcode ,
+            elPopover: Popover ,
+            elButton: Button ,
+            VBreadcrumbs ,
+            VBtn ,
+            VIcon ,
+            VAvatar ,
+            VSpeedDial ,
+            VTooltip
         } ,
 
         created() {
@@ -626,6 +693,9 @@
 
         data() {
             return {
+
+                fab : false ,
+
                 show_page : true ,
 
                 zoom: 16,
@@ -758,8 +828,20 @@
                     return (val/1000).toLocaleString('fa-IR')
                 } else if(val < 1000000000) {
                     return (val/1000000).toLocaleString('fa-IR')
-                } else if(val > 1000000000) {
+                } else if(val >= 1000000000) {
                     return (val/1000000000).toLocaleString('fa-IR')
+                }
+            } ,
+
+            multi_price(val) {
+                if(!val) {
+                    return 'توافقی'
+                } else if(val < 1000000) {
+                    return (val/1000).toLocaleString('fa-IR')
+                } else if(val < 1000000000) {
+                    return parseFloat((val/1000000).toFixed(1)).toLocaleString('fa-IR')
+                } else if(val >= 1000000000) {
+                    return parseFloat((val/1000000000).toFixed(2)).toLocaleString('fa-IR')
                 }
             }
         } ,
@@ -886,6 +968,9 @@
                                                 address
                                                 phone_number
                                                 owner {
+                                                    first_name
+                                                    last_name
+                                                    full_name
                                                     avatar {
                                                         id
                                                         file_name
@@ -1175,7 +1260,7 @@
                     return `هزار تومان`
                 } else if(val < 1000000000) {
                     return `میلیون تومان`
-                } else if(val > 1000000000) {
+                } else if(val >= 1000000000) {
                     return `میلیارد تومان`
                 }
             } ,
@@ -1210,14 +1295,30 @@
                         done()
                     }
                 })
-            }
-        }
+            } ,
 
+            label_multi_price(val) {
+                if(!val) {
+                    return '.';
+                } else if(val < 1000000) {
+                    return ``
+                } else if(val < 1000000000) {
+                    return `م`
+                } else if(val >= 1000000000) {
+                    return `م`
+                }
+            } ,
+
+        }
     }
 
 </script>
 
 <style>
+
+    .estate-detail a {
+        color: inherit !important;
+    }
 
     .opacity-0 {
         opacity: 0 !important;

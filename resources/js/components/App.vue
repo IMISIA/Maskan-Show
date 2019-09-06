@@ -1,19 +1,18 @@
 <template>
     <div>
-
         <transition name="fade" mode="in-out">
-            <div class="as-loading" v-if="loading">
+            <div class="as-loading" v-show="loading">
                 <radar-spinner :animation-duration="2000" :size="130" :color="web_color" />
             </div>
         </transition>
 
-        <as-header></as-header>
+        <Header />
 
         <transition name="fade" mode="in-out">
             <router-view></router-view>
         </transition>
 
-        <as-footer></as-footer>
+        <Footer />
 
         <vs-popup class="login-modal" title="ورود" :active.sync="$store.state.login_modal">
                 <v-form v-model="valid.login">
@@ -112,8 +111,9 @@
                             </h6>
                             <v-text-field
                                 @keyup.native.enter="user_login(true)"
-                                class="small-text-field"
+                                class="small-text-field access_code"
                                 v-model="login.access_code"
+                                v-mask="mask"
                                 label="کد دسترسی را وارد کنید"
                                 reverse
                                 outline
@@ -231,7 +231,7 @@
                         :color=" valid.steps.step_1 ? '#00E676' : web_color "> مشخصات فردی </v-stepper-step>
 
                     <transition name="fade" mode="out-in">
-                        <v-divider v-if="is_consultant"></v-divider>
+                        <v-divider v-show="is_consultant"></v-divider>
                     </transition>
 
                     <transition name="fade" mode="out-in">
@@ -485,12 +485,32 @@
                 <v-icon>expand_less</v-icon>
             </v-btn>
         </div>
-
     </div>
 </template>
 
 <script>
-
+    import Header from './Layout/header.vue';
+    import Footer from './Layout/footer.vue';
+    import {
+        VForm ,
+        VTextField ,
+        VTextarea ,
+        VBtn ,
+        VIcon ,
+        VStepper ,
+        VStepperStep ,
+        VStepperItems ,
+        VStepperContent ,
+        VStepperHeader ,
+        VDivider ,
+        VCheckbox
+    } from 'vuetify/lib';
+    import {
+        Link ,
+        Select ,
+        Option
+    } from 'element-ui';
+    import { mask } from 'vue-the-mask';
     import mixin from '../mixin';
     import {
         mapState ,
@@ -498,8 +518,31 @@
     } from 'vuex';
 
     export default {
-
         mixins: [mixin] ,
+
+        components: {
+            Header ,
+            Footer ,
+            elLink: Link ,
+            elSelect: Select ,
+            elOption: Option ,
+            VForm ,
+            VTextField ,
+            VTextarea ,
+            VBtn ,
+            VIcon ,
+            VStepper ,
+            VStepperStep ,
+            VStepperItems ,
+            VStepperContent ,
+            VStepperHeader ,
+            VDivider ,
+            VCheckbox
+        } ,
+
+        directives: {
+            mask
+        } ,
 
         metaInfo() {
             return {
@@ -536,6 +579,8 @@
 
         data() {
             return {
+
+                mask: '# - # - # - # - # - #',
 
                 site_title : 'مسکن شو' ,
 
@@ -1044,10 +1089,14 @@
                     ) {
                         if(this.is_exist(data.data.register)) {
                             localStorage.setItem( 'JWT' , data.data.register.token );
-                            localStorage.setItem( 'SAC' , data.data.register.system_authentication_code );
+                            if(data.data.register.system_authentication_code) {
+                                localStorage.setItem( 'SAC' , data.data.register.system_authentication_code )
+                            }
                         } else {
                             localStorage.setItem( 'JWT' , data.data.registerConsultant.token );
-                            localStorage.setItem( 'SAC' , data.data.registerConsultant.system_authentication_code );
+                            if(data.data.registerConsultant.system_authentication_code) {
+                                localStorage.setItem( 'SAC' , data.data.registerConsultant.system_authentication_code );
+                            }
                         }
                         location.reload();
                     } else if(
@@ -1098,13 +1147,13 @@
                                     username : "${this.login.email}" ,
                                     ${ !with_access_code
                                         ? `password : "${this.login.password.value}"`
-                                        : `access_code : "${this.login.access_code}"`
+                                        : `access_code : "${ this.login.access_code.split(' - ').join('') }"`
                                     }
                                 ) {
                                     token
                                     system_authentication_code
                                 }
-                            }                            
+                            }
                         `
                     } ,
                     headers : {
@@ -1122,10 +1171,14 @@
                     ) { 
                         if( this.is_exist(data.data.login) ) {
                             window.localStorage.setItem( 'JWT' , data.data.login.token );
-                            window.localStorage.setItem( 'SAC' , data.data.login.system_authentication_code );
+                            if(data.data.login.system_authentication_code) {
+                                window.localStorage.setItem( 'SAC' , data.data.login.system_authentication_code );
+                            }
                         } else {
                             window.localStorage.setItem( 'JWT' , data.data.loginWithAccessCode.token );
-                            window.localStorage.setItem( 'SAC' , data.data.loginWithAccessCode.system_authentication_code );
+                            if(data.data.loginWithAccessCode.system_authentication_code) {
+                                window.localStorage.setItem( 'SAC' , data.data.loginWithAccessCode.system_authentication_code );
+                            }
                         }
                         location.reload();
                     } else if(data.status == 403) {
@@ -1282,12 +1335,22 @@
             } ,
 
         }
-
     }
 
 </script>
 
 <style>
+
+    .access_code input {
+        text-align: center;
+        font-size: 19px !important;
+        direction: ltr;
+    }
+
+    .access_code label {
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+    }
 
     .areas.el-select-dropdown__item {
         direction: rtl;

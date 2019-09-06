@@ -1,5 +1,5 @@
 <template>
-    <section class="clients_logo_area p_100 pb-0" v-if="has_offices">
+    <section class="clients_logo_area pt-5 pb-0" v-if="has_offices">
         <div class="container">
             <div class="main_title">
                 <h2> املاک های مسکن شو </h2>
@@ -13,13 +13,15 @@
                             </v-avatar>
 
                             <p class="text-center mb-2 mt-2">
+                                {{ ( office.name ? 'املاک ' + office.name : 'ناشناس' ) | truncate(20) }}
+                            </p>
+                            <span>
                                 {{ office.owner && office.owner.full_name && office.owner.full_name != " " 
                                     ? office.owner.full_name
                                     : 'ناشناس' 
                                     | truncate(20)
                                 }}
-                            </p>
-                            <span> {{ ( office.name || 'ناشناس' ) | truncate(20) }} </span>
+                            </span>
 
                         </div>
                     </router-link>
@@ -30,10 +32,16 @@
 </template>
 
 <script>
-
+    import {
+        VAvatar
+    } from 'vuetify/lib';
     import { mapState } from 'vuex';
 
     export default {
+
+        components: {
+            VAvatar
+        } ,
 
         computed : {
             ...mapState([
@@ -56,7 +64,7 @@
                             responsiveClass: true,
                             responsive: {
                                 0: {
-                                    items: 1,
+                                    items: 2,
                                 },
                                 400: {
                                     items: 2,

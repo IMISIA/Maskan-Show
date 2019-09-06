@@ -16,7 +16,7 @@
                             «مشاغل ساختمانی» و «اشتغال زایی» وخدمات وابسته به آن، فعالیت می‌کند.
                             مسکن شو به شما امکان فروش، اجاره و خرید ملک مورد نظرتان را می‌دهد.
                         </p>
-                        <div class="row" v-if="false">
+                        <div class="row" v-show="false">
                             <div class="col-sm-4">
                                 <div class="wel_item">
                                     <i class="lnr lnr-database web-color"></i>

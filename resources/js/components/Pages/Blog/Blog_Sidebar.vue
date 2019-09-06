@@ -31,7 +31,7 @@
 
             <h4 class="bold"> {{ writer.full_name }} </h4>
             <p class="text-center"> نویسنده </p>
-            <div class="social_icon" v-if="false">
+            <div class="social_icon" v-show="false">
                 <a href="#">
                     <img class="mx-1" src="/template/karma/img/blog/twitter.svg" height="25px" width="25px" alt="facebook">
                 </a>
@@ -106,14 +106,25 @@
 </template>
 
 <script>
-
+    import {
+        VImg ,
+        VAvatar ,
+        VChip ,
+        VIcon
+    } from 'vuetify/lib';
     import { mapState } from 'vuex';
     import mixin from '../../../mixin';
 
     export default {
-
         props : [ 'Req' , 'writer' , 'subjects' , 'tags' ] ,
         mixins : [mixin] ,
+
+        components: {
+            VImg ,
+            VAvatar ,
+            VChip ,
+            VIcon
+        } ,
 
         data() {
             return {
@@ -126,8 +137,6 @@
                 all_subjects : 'subjects' ,
                 url : 'url'
             })
-        } ,
-    
-
+        }
     }
 </script>

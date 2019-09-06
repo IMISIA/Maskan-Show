@@ -1,9 +1,7 @@
 <template>
     <el-card class="mb-3" shadow="hover" body-style="padding: 0px !important">
         <div class="feature-item row rtl list">
-
             <router-link class="col-md-4" :to=" 'estate/' + estate.id ">
-                
                 <div class="feature-pic js-tilt ltr bg-estate"
                     :class="{ 'placeholder' : !img.has_img , 'blur' : !!estate.assignmented_at || is_exist(estate.label) }"
                     :style="{ backgroundImage : `url('${ img.has_img ? url+img.src : img.src }')` }">
@@ -14,8 +12,8 @@
                     </div>
 
                     <div class="bookmark" @click.prevent="add_fav">
-                        <img v-if="!is_fav" src="/img/bookmark.svg">
-                        <img v-else src="/img/bookmark-fill.svg">
+                        <img v-show="!is_fav" src="/img/bookmark.svg">
+                        <img v-show="is_fav" src="/img/bookmark-fill.svg">
                     </div>
 
                     <div class="room-info text-left d-flex as-info pt-0">
@@ -62,15 +60,12 @@
                         </span>
                     </div>
                 </div>
-
             </router-link>
 
             <router-link class="col-md-8" :to=" 'estate/' + estate.id ">
                 <!-- Details -->
                 <div class="feature-text mt-2">
-
                     <div class="text-center feature-title row">
-
                         <div class="col-md-7 pr-0">
                             <router-link :to=" 'estate/' + estate.id ">
                                 <h5 class="bold"> 
@@ -118,7 +113,14 @@
                                         : 'ناشناس' 
                                     }}
                                 </p>
-                                <p class="fs-10 text-danger bold" v-if="!estate.want_cooperation"> عدم تمایل همکاری با مشاورین املاک </p>
+                                <p class="fs-10 bold" :class="estate.want_cooperation ? 'text-success' : 'text-danger'"
+                                    v-if="estate.registrar_type && estate.registrar_type.id == 2 || !estate.want_cooperation"> 
+                                    {{
+                                        estate.want_cooperation
+                                        ? 'تمایل همکاری با مشاورین املاک'
+                                        : 'عدم تمایل همکاری با مشاورین املاک'
+                                    }}
+                                </p>
                                 <p class="fs-10 text-muted bold" v-else-if=" !( !!estate.assignmented_at || is_exist(estate.label) )
                                     && is_exist(estate.creator) && estate.creator.is_public_info ">
                                     {{ estate.creator.username+'@' }}
@@ -126,17 +128,15 @@
                                 <p class="fs-10 text-muted bold" v-else> بدون اطلاعات </p>
                             </div>
                         </div>
-
                     </div>
 
                     <div class="room-info-warp rtl text-right">
                         <div class="row room-info d-flex rtl">
-
                             <template v-if="is_exist(estate.specifications)">
                                 <template
                                     v-for="(spec,idx) in estate.specifications.slice( 0 , estate.specifications.length >= 8 ? 8 : estate.specifications.length )">
                                     <div :class="set_grid"
-                                        v-if=" ( is_exist(spec.data) && spec.data != '[]' ) || is_exist(spec.values) " :key="idx+'spec'">
+                                        v-if=" ( is_exist(spec.data) && spec.data != '[]' || spec.data == '0' ) || is_exist(spec.values) " :key="idx+'spec'">
                                         <p class="hvr-icon-back">
                                             <i :class="`fa fa-${ spec.row && spec.row.icon ? spec.row.icon : 'building' } hvr-icon web-color`"></i>
                                             <template v-if="is_exist(spec.values)">
@@ -155,7 +155,7 @@
                                                     | truncate(25)
                                                 }}
                                             </template>
-                                            <template v-else-if="is_exist(spec.data)">
+                                            <template v-else-if="is_exist(spec.data) || spec.data == '0'">
                                                 {{ 
                                                     ( spec.row ? spec.row.prefix +' ' : '' ) +
                                                     spec.data +' '+
@@ -178,7 +178,6 @@
                                     </div>
                                 </template>
                             </template>
-
                         </div>
                     </div>
 
@@ -210,24 +209,34 @@
                         </div>
                         <div class="price rtl"> {{ (estate.area).toLocaleString('fa-IR') }} متری </div>
                     </div>
-
                 </div>
             </router-link>
-
         </div>
     </el-card>
 </template>
 
 <script>
 
+    import {
+        VAvatar
+    } from 'vuetify/lib';
+    import {
+        Card ,
+        Tooltip
+    } from 'element-ui';
     import mixin from '../../mixin';
     import moment from '../../moment';
     import { mapState } from 'vuex';
 
     export default {
-
         props : ['estate'] ,
         mixins : [mixin,moment] ,
+
+        components: {
+            elCard: Card ,
+            elTooltip: Tooltip ,
+            VAvatar
+        } ,
 
         mounted() {
                 
@@ -347,7 +356,7 @@
                     return (val/1000).toLocaleString('fa-IR')
                 } else if(val < 1000000000) {
                     return (val/1000000).toLocaleString('fa-IR')
-                } else if(val > 1000000000) {
+                } else if(val >= 1000000000) {
                     return (val/1000000000).toLocaleString('fa-IR')
                 }
             }
@@ -442,7 +451,7 @@
                     return `هزار تومان`
                 } else if(val < 1000000000) {
                     return `میلیون تومان`
-                } else if(val > 1000000000) {
+                } else if(val >= 1000000000) {
                     return `میلیارد تومان`
                 }
             }
@@ -450,7 +459,6 @@
         }
 
     }
-    
 </script>
 
 <style>
